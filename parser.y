@@ -15,7 +15,7 @@ pid_t pid;
 FlexArray args;
 
 void exitWrapper(){
-	printFlexArray(args);
+	//printFlexArray(args);
 	emptyFlexArray(&args);
 	free(args.arr);
 	yylex_destroy();
@@ -43,16 +43,16 @@ command: executable options {
 		fprintf(stderr, "fork fail\n");
 	} else if( pid > 0){
 		wait(NULL);						// Parent waits until child terminates.
-		printf("<<child terminated>>\n");
+		//printf("<<child terminated>>\n");
 		emptyFlexArray(&args);			// Clean array of arguments for next command.
 		free($1);						// The executable needs to be freed too.
 	} else {							// Child: actually execute the code.
-		printf("<<child created>>\n");
+		//printf("<<child created>>\n");
 		add(NULL, &args);
 
-		printf("execvp(%s, ", $1);
-		printFlexArray(args);
-		printf(")\n");
+		//printf("execvp(%s, ", $1);
+		//printFlexArray(args);
+		//printf(")\n");
 
 		execvp($1, args.arr);
 		exit(EXIT_SUCCESS);				// In case the execv doesn't get an executable.
@@ -61,14 +61,14 @@ command: executable options {
 ;
 
 executable: IDENTIFIER		{ add($1, &args); }
-| EXIT						{ printf("EXIT\n"); exitWrapper(); }
+| EXIT						{ exitWrapper(); }
 ;
 
 options: EOL				{ ; }
 | option options			{ ; }
 ;
 
-option: IDENTIFIER			{ add($1, &args); printf("OP1 %s\n", $1); free($1); }
+option: IDENTIFIER			{ add($1, &args); free($1); }
 
 %%
 
@@ -77,8 +77,6 @@ int main(int argc, char **argv)
 	args = newFlexArray();
 
     yyparse();
-
-	printFlexArray(args);
 
     return 0;
 }
