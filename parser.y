@@ -24,7 +24,7 @@ commands:
 | commands command			{ ; }
 ;
 
-command: executable options { printf("executable: %soptions %s", $1, $2); }
+command: executable options { printf("execlp(%s, %s, %s, NULL);\n", $1, $1, $2); execlp($1, $1, $2, NULL); }
 ;
 
 executable: IDENTIFIER		{ $$ = $1; printf("EX %s\n", $$); }
