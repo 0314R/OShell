@@ -46,12 +46,22 @@ void add(char *input, FlexArray *fa){
 }
 
 void printFlexArray(FlexArray fa){
-	for(int i=0 ; i<fa.len ; i++){
+	int i;
+
+	putchar('{');
+
+	for(i=0 ; i<fa.len-1 ; i++){
 		if(fa.arr[i] != NULL)
-			printf("arg[%d]: %s\n", i, fa.arr[i]);
+			printf("\"%s\", ", fa.arr[i]);
 		else
-			printf("arg[%d]: NULL\n", i);
+			printf("NULL, ");
 	}
+
+	// Now print the last string, which should be a NULL but if/else just in case.
+	if(fa.arr[i] != NULL)
+		printf("\"%s\"}", fa.arr[i]);
+	else
+		printf("NULL}");
 }
 
 void emptyFlexArray(FlexArray *fa){

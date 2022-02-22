@@ -35,7 +35,9 @@ commands:
 | commands command			{ ; }
 ;
 
-command: executable options { printf("execvp(%s, args, NULL);\n", $1); add(NULL, &args);/*execvp($1, $1, $2, NULL); */free($1); }
+command: executable options { add(NULL, &args); printf("execvp(%s, ", $1);
+							  printFlexArray(args); printf(")\n");
+							  /*execvp($1, $1, $2, NULL); */free($1); }
 ;
 
 executable: IDENTIFIER		{ add($1, &args); }
