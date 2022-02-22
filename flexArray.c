@@ -35,15 +35,22 @@ void add(char *input, FlexArray *fa){
 	if(fa->len == fa->max_len)
 		flex(fa);
 
-	int in_len = strlen(input);
-	fa->arr[fa->len] = malloc( (in_len+1) * sizeof(char));
-	strcpy(fa->arr[fa->len], input);
+	if(input != NULL){
+		int in_len = strlen(input);
+		fa->arr[fa->len] = malloc( (in_len+1) * sizeof(char));
+		strcpy(fa->arr[fa->len], input);
+	} else {
+		fa->arr[fa->len] = NULL;
+	}
 	fa->len++;
 }
 
 void printFlexArray(FlexArray fa){
 	for(int i=0 ; i<fa.len ; i++){
-		printf("arg[%d]: %s\n", i, fa.arr[i]);
+		if(fa.arr[i] != NULL)
+			printf("arg[%d]: %s\n", i, fa.arr[i]);
+		else
+			printf("arg[%d]: NULL\n", i);
 	}
 }
 

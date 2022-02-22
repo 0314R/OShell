@@ -35,10 +35,10 @@ commands:
 | commands command			{ ; }
 ;
 
-command: executable options { /*printf("execlp(%s, %s, %s, NULL);\n", $1, $1, $2); execlp($1, $1, $2, NULL)*/ ; }
+command: executable options { printf("execvp(%s, args, NULL);\n", $1); add(NULL, &args);/*execvp($1, $1, $2, NULL); */free($1); }
 ;
 
-executable: IDENTIFIER		{ free($1); }
+executable: IDENTIFIER		{ add($1, &args); }
 | EXIT						{ printf("EXIT\n"); exitWrapper(); }
 ;
 
