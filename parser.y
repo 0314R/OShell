@@ -4,12 +4,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include "flexArray.h"
 
 int yylex(void);
 int yyerror(char* s);
 
-//char *executable;
-//char *first_option;
 %}
 
 %union {int num; char *id; }
@@ -41,6 +40,9 @@ option: IDENTIFIER			{ $$ = $1; printf("OP1 %s\n", $$); }
 
 int main(int argc, char **argv)
 {
+	FlexArray args;
+	args = newFlexArray();
+
     yyparse();
 
     return 0;
