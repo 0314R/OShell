@@ -4,10 +4,22 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <string.h>
 #include "flexArray.h"
 
 int yylex(void);
 int yyerror(char* s);
+int yylex_destroy();
+
+FlexArray args;
+
+void exitWrapper(){
+	printFlexArray(args);
+	emptyFlexArray(&args);
+	free(args.arr);
+	yylex_destroy();
+	exit(EXIT_SUCCESS);
+}
 
 %}
 
@@ -23,27 +35,28 @@ commands:
 | commands command			{ ; }
 ;
 
-command: executable options { printf("execlp(%s, %s, %s, NULL);\n", $1, $1, $2); execlp($1, $1, $2, NULL); }
+command: executable options { /*printf("execlp(%s, %s, %s, NULL);\n", $1, $1, $2); execlp($1, $1, $2, NULL)*/ ; }
 ;
 
-executable: IDENTIFIER		{ $$ = $1; printf("EX %s\n", $$); }
-| EXIT						{ printf("EXIT\n"); exit(EXIT_SUCCESS); }
+executable: IDENTIFIER		{ free($1); }
+| EXIT						{ printf("EXIT\n"); exitWrapper(); }
 ;
 
-options: EOL				{ $$ = ""; }
-| option options			{ $$ = $1; }
+options: EOL				{ ; }
+| option options			{ ; }
 ;
 
-option: IDENTIFIER			{ $$ = $1; printf("OP1 %s\n", $$); }
+option: IDENTIFIER			{ add($1, &args); printf("OP1 %s\n", $1); free($1); }
 
 %%
 
 int main(int argc, char **argv)
 {
-	FlexArray args;
 	args = newFlexArray();
 
     yyparse();
+
+	printFlexArray(args);
 
     return 0;
 }
