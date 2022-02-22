@@ -15,12 +15,12 @@
 "&&"                { return AND; }
 "|"                 { return SINGLEOR; }
 "&"                 { return SINGLEAND; }
-";"                 { yylval.end = return (*yytext); }
+";"                 { return (*yytext); }
 "<"					{ return (*yytext); }
 ">"					{ return (*yytext); }
 
 "exit"				{ return EXIT; }
-[^ \t\n|&;<>]+      { yylval.id = yytext; return IDENTIFIER; }
+[^ \t\n|&;<>]+      { yylval.id = strdup(yytext); return IDENTIFIER; }
 \n					{ return EOL; }
 [ \t]            	{  }
 
