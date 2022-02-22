@@ -8,9 +8,9 @@ int yylex(void);
 int yyerror(char* s);
 %}
 
-%token IDENTIFIER
+%token IDENTIFIER OR AND SINGLEOR SINGLEAND EXIT EOL
 %token EOL
-
+ 
 %%
 
 inputline   : chain AND inputline
@@ -36,7 +36,7 @@ pipeline    : command SINGLEOR pipeline
             | command
             ;
 
-command     : IDENTIFIER options
+command     : IDENTIFIER options        { printf(""); }
             ;
 
 options     : IDENTIFIER options
