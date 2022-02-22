@@ -2,15 +2,21 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 int yylex(void);
 int yyerror(char* s);
+
+//char *executable;
+//char *first_option;
 %}
 
 %union {int num; char *id; }
 %token <id> IDENTIFIER
 %token EOL
 %token EXIT
+%type <id> command executable options option
 
 %%
 
@@ -18,18 +24,18 @@ commands:
 | commands command			{ ; }
 ;
 
-command: executable options { ; }
+command: executable options { printf("executable: %soptions %s", $1, $2); }
 ;
 
-executable: IDENTIFIER		{ printf("ID %s\n", $1); }
-| EXIT						{ printf("EX\n"); exit(EXIT_SUCCESS); }
+executable: IDENTIFIER		{ $$ = $1; printf("EX %s\n", $$); }
+| EXIT						{ printf("EXIT\n"); exit(EXIT_SUCCESS); }
 ;
 
-options: EOL
-| option options			{ ; }
+options: EOL				{ $$ = ""; }
+| option options			{ $$ = $1; }
 ;
 
-option: IDENTIFIER			{ printf("OP %s\n", $1); }
+option: IDENTIFIER			{ $$ = $1; printf("OP1 %s\n", $$); }
 
 %%
 
