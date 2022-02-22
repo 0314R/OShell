@@ -1,6 +1,8 @@
 
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 int yylex(void);
 int yyerror(char* s);
@@ -11,9 +13,37 @@ int yyerror(char* s);
 
 %%
 
-commands:
-| commands IDENTIFIER EOL { printf("ID\\n \n"); }
-;
+inputline   : chain AND inputline
+            | chain SINGLEAND inputline
+            | chain OR inputline
+            | chain ';'
+            | chain
+            | 
+            ;
+
+chain       : pipeline redirections
+            //| buitlin options 
+            ; 
+
+redirections: '<' IDENTIFIER '>' IDENTIFIER
+            | '>' IDENTIFIER '<' IDENTIFIER
+            | '>' IDENTIFIER
+            | '<' IDENTIFIER
+            |
+            ;
+
+pipeline    : command SINGLEOR pipeline
+            | command
+            ;
+
+command     : IDENTIFIER options
+            ;
+
+options     : IDENTIFIER options
+            | IDENTIFIER
+            |
+            ;
+
 
 %%
 
