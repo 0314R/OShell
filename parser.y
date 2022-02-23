@@ -26,49 +26,55 @@ void exitWrapper(){
 
 %union {int num; char *id; }
 %token <id> IDENTIFIER
-%token EOL
+%token OR AND SINGLEOR SINGLEAND EOL
 %token EXIT
 %type <id> command executable options option
 
 %%
 
-commands:
-| commands command			{ ; }
-;
+inputline   : chain EOL inputline
+            |
+            ;
 
-command: executable options {
-	pid = fork();
+chain       : pipeline
+            ;
 
-	if(pid < 0){
-		fprintf(stderr, "fork fail\n");
-	} else if( pid > 0){
-		wait(NULL);						// Parent waits until child terminates.
-		//printf("<<child terminated>>\n");
-		emptyFlexArray(&args);			// Clean array of arguments for next command.
-		free($1);						// The executable needs to be freed too.
-	} else {							// Child: actually execute the code.
-		//printf("<<child created>>\n");
-		add(NULL, &args);
+pipeline    : command
+            ;
 
-		//printf("execvp(%s, ", $1);
-		//printFlexArray(args);
-		//printf(")\n");
+command     : executable options {
+                pid = fork();
 
-		execvp($1, args.arr);
-		exit(EXIT_SUCCESS);				// In case the execv doesn't get an executable.
-	}
-}
-;
+                if(pid < 0){
+                    fprintf(stderr, "fork fail\n");
+                } else if( pid > 0){
+                    wait(NULL);						// Parent waits until child terminates.
+                    //printf("<<child terminated>>\n");
+                    emptyFlexArray(&args);			// Clean array of arguments for next command.
+                    free($1);						// The executable needs to be freed too.
+                } else {							// Child: actually execute the code.
+                    //printf("<<child created>>\n");
+                    add(NULL, &args);
 
-executable: IDENTIFIER		{ add($1, &args); }
-| EXIT						{ exitWrapper(); }
-;
+                    //printf("execvp(%s, ", $1);
+                    //printFlexArray(args);
+                    //printf(")\n");
 
-options: EOL				{ ; }
-| option options			{ ; }
-;
+                    execvp($1, args.arr);
+                    exit(EXIT_SUCCESS);				// In case the execv doesn't get an executable.
+                }
+            }
+            ;
 
-option: IDENTIFIER			{ add($1, &args); free($1); }
+executable  : IDENTIFIER	        	{ add($1, &args); }
+            | EXIT						{ exitWrapper(); }
+            ;
+
+options     :           				{ ; }
+            | option options			{ ; }
+            ;
+
+option      : IDENTIFIER			{ add($1, &args); free($1); }
 
 %%
 
