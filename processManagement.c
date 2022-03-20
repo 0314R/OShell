@@ -1,7 +1,5 @@
 #include "processManagement.h"
 
-#define EXIT_COMMAND 2
-
 int executeCommand(char *executable, FlexArray *args)
 {
 	int status;
