@@ -10,4 +10,4 @@
 
 pid_t pid;
 
-void executeCommand(char *executable, FlexArray *args);
+int executeCommand(char *executable, FlexArray *args);

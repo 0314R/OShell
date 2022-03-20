@@ -1,7 +1,8 @@
 #include "processManagement.h"
 
-void executeCommand(char *executable, FlexArray *args)
+int executeCommand(char *executable, FlexArray *args)
 {
+	int status;
 	pid = fork();
 
 	if(pid < 0)
@@ -10,7 +11,7 @@ void executeCommand(char *executable, FlexArray *args)
 	}
 	else if( pid > 0)
 	{
-		wait(NULL);						// Parent waits until child terminates.
+		wait(&status);	// Parent waits until child terminates. Return value 0 if success
 		emptyFlexArray(args);			// Clean array of arguments for next command.
 		free(executable);				// The executable needs to be freed too.
 	}
@@ -18,11 +19,11 @@ void executeCommand(char *executable, FlexArray *args)
 	{									// Child: actually execute the code.
 		add(NULL, args);				// The last "argument" should be NULL for execvp to work
 
-
-		if( execvp(executable, args->arr) ){ // execvp only returns if an error has occurred.
+		if( execvp(executable, args->arr) == -1){
 			printf("Error: command not found!\n");
-			exit(EXIT_SUCCESS);			// The process still exits.
+			exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
 		}
 
 	}
+	return status;
 }

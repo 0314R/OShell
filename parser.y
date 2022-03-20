@@ -22,7 +22,8 @@ void exitWrapper(){
 %token <id> IDENTIFIER
 %token OR AND SINGLEOR SINGLEAND EOL
 %token EXIT
-%type <id> command executable options option
+%type <id> executable options option
+%type <num> command
 
 %%
 
@@ -33,10 +34,10 @@ inputline   : chain EOL inputline
 chain       : pipeline
             ;
 
-pipeline    : command
+pipeline    : command					{ ; }
             ;
 
-command     : executable options 		{ executeCommand($1, &args); }
+command     : executable options 		{ $$ = executeCommand($1, &args); }
             ;
 
 executable  : IDENTIFIER	        	{ add($1, &args); }
