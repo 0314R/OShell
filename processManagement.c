@@ -12,7 +12,6 @@ int executeCommand(char *executable, FlexArray *args)
 	else if( pid > 0)
 	{
 		wait(&status);	// Parent waits until child terminates. Return value 0 if success
-		emptyFlexArray(args);			// Clean array of arguments for next command.
 		free(executable);				// The executable needs to be freed too.
 	}
 	else

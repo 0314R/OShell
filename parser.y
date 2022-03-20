@@ -41,11 +41,12 @@ chain       : pipeline					{ $$ = $1; skip = false; }
 pipeline    : command					{ $$ = $1; }
             ;
 
-command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args); }
+command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
+										  emptyFlexArray(&args); 			} // Clean array of arguments for next command.
             ;
 
-executable  : IDENTIFIER	        	{ add($1, &args); }
-            | EXIT						{ exitWrapper(); }
+executable  : EXIT						{ exitWrapper(); }
+			| IDENTIFIER	        	{ add($1, &args); }
             ;
 
 options     :           				{ ; }
