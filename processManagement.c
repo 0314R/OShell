@@ -17,7 +17,12 @@ void executeCommand(char *executable, FlexArray *args)
 	else
 	{									// Child: actually execute the code.
 		add(NULL, args);				// The last "argument" should be NULL for execvp to work
-		execvp(executable, args->arr);
-		exit(EXIT_SUCCESS);				// If execvp does not recognize the executable, the process still exits.
+
+
+		if( execvp(executable, args->arr) ){ // execvp only returns if an error has occurred.
+			printf("Error: command not found!\n");
+			exit(EXIT_SUCCESS);			// The process still exits.
+		}
+
 	}
 }
