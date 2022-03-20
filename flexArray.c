@@ -1,13 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>
-
-typedef struct FlexArray{
-	char **arr;
-	int len;
-	int max_len;
-} FlexArray;
+#include "flexArray.h"
 
 FlexArray newFlexArray(){
 	FlexArray fa;
@@ -33,7 +24,7 @@ void flex(FlexArray *fa){
 
 void add(char *input, FlexArray *fa){
 	if(fa->len == fa->max_len)
-		flex(fa);
+		flex(fa);			// to flex <=> to double size of array
 
 	if(input != NULL){
 		int in_len = strlen(input);

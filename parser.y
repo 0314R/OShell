@@ -2,9 +2,6 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <sys/wait.h>
-#include <string.h>
 #include "processManagement.h"
 
 int yylex(void);
@@ -15,8 +12,6 @@ pid_t pid;
 FlexArray args;
 
 void exitWrapper(){
-	//printFlexArray(args);
-	//emptyFlexArray(&args);
 	free(args.arr);
 	yylex_destroy();
 	exit(EXIT_SUCCESS);
