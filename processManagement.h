@@ -9,6 +9,8 @@
 
 #include "flexArray.h"
 
+#define EXIT_COMMAND 2
+
 pid_t pid;
 
 int executeCommand(char *executable, FlexArray *args);

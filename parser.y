@@ -20,7 +20,6 @@ void exitWrapper(){
 %union {int num; char *id; }
 %token <id> IDENTIFIER
 %token OR AND SINGLEOR SINGLEAND EOL
-%token EXIT
 %type <id> executable options option
 %type <num> command pipeline chain
 
@@ -42,11 +41,11 @@ pipeline    : command					{ $$ = $1; }
             ;
 
 command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
-										  emptyFlexArray(&args); 			} // Clean array of arguments for next command.
+										  emptyFlexArray(&args);		// Clean array of arguments for next command.
+										  if($$ == EXIT_COMMAND) exitWrapper();			}
             ;
 
-executable  : EXIT						{ if(skip == false) exitWrapper(); }
-			| IDENTIFIER	        	{ add($1, &args); }
+executable  : IDENTIFIER	        	{ add($1, &args); }
             ;
 
 options     :           				{ ; }
