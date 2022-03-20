@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <string.h>
-#include "flexArray.h"
+#include "processManagement.h"
 
 int yylex(void);
 int yyerror(char* s);
@@ -42,7 +42,8 @@ chain       : pipeline
 pipeline    : command
             ;
 
-command     : executable options {
+command     : executable options 		{ executeCommand($1, args); free($1);}
+	/*
                 pid = fork();
 
                 if(pid < 0){
@@ -63,7 +64,7 @@ command     : executable options {
                     execvp($1, args.arr);
                     exit(EXIT_SUCCESS);				// In case the execv doesn't get an executable.
                 }
-            }
+            } */
             ;
 
 executable  : IDENTIFIER	        	{ add($1, &args); }
