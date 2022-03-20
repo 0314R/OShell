@@ -42,7 +42,7 @@ chain       : pipeline
 pipeline    : command
             ;
 
-command     : executable options 		{ executeCommand($1, args); free($1);}
+command     : executable options 		{ executeCommand($1, args); }
 	/*
                 pid = fork();
 
