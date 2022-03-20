@@ -45,7 +45,7 @@ command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &
 										  emptyFlexArray(&args); 			} // Clean array of arguments for next command.
             ;
 
-executable  : EXIT						{ exitWrapper(); }
+executable  : EXIT						{ if(skip == false) exitWrapper(); }
 			| IDENTIFIER	        	{ add($1, &args); }
             ;
 
