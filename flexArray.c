@@ -56,7 +56,7 @@ void printFlexArray(FlexArray fa){
 }
 
 void emptyFlexArray(FlexArray *fa){
-	//printf("freeing array of size %d\n", fa->len);
+	printf("freeing array of size %d\n", fa->len);
 	for(int i=0 ; i < (fa->len) ; i++ ){
 		free( fa->arr[i] );
 	}
