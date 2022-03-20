@@ -12,18 +12,20 @@ int executeCommand(char *executable, FlexArray *args)
 	else if( pid > 0)
 	{
 		wait(&status);	// Parent waits until child terminates. Return value 0 if success
-		emptyFlexArray(args);			// Clean array of arguments for next command.
 		free(executable);				// The executable needs to be freed too.
 	}
 	else
 	{									// Child: actually execute the code.
 		add(NULL, args);				// The last "argument" should be NULL for execvp to work
 
-		if( execvp(executable, args->arr) == -1){
+		if( strcmp(executable, "exit") == 0){
+			exit(EXIT_COMMAND);					// Special exit value
+		}
+		else if( execvp(executable, args->arr) == -1){
 			printf("Error: command not found!\n");
 			exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
 		}
 
 	}
-	return status;
+	return WEXITSTATUS(status);
 }

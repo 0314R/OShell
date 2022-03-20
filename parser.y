@@ -1,7 +1,5 @@
 
 %{
-#include <stdio.h>
-#include <stdlib.h>
 #include "processManagement.h"
 
 int yylex(void);
@@ -9,6 +7,7 @@ int yyerror(char* s);
 int yylex_destroy();
 
 FlexArray args;
+int skip = false;
 
 void exitWrapper(){
 	free(args.arr);
@@ -21,27 +20,32 @@ void exitWrapper(){
 %union {int num; char *id; }
 %token <id> IDENTIFIER
 %token OR AND SINGLEOR SINGLEAND EOL
-%token EXIT
 %type <id> executable options option
-%type <num> command
+%type <num> command pipeline chain
 
 %%
-
-inputline   : chain EOL inputline
-            |
+inputline   : composition inputline		{ ; }
+			|
             ;
 
-chain       : pipeline
+composition : chain AND					{ if($1 != 0) skip = true; }
+			| chain OR					{ if($1 == 0) skip = true; }
+			| chain EOL					{ ; }
+			| chain ';'					{ ; }
+			;
+
+chain       : pipeline					{ $$ = $1; skip = false; }
             ;
 
-pipeline    : command					{ ; }
+pipeline    : command					{ $$ = $1; }
             ;
 
-command     : executable options 		{ $$ = executeCommand($1, &args); }
+command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
+										  emptyFlexArray(&args);		// Clean array of arguments for next command.
+										  if($$ == EXIT_COMMAND) exitWrapper();			}
             ;
 
 executable  : IDENTIFIER	        	{ add($1, &args); }
-            | EXIT						{ exitWrapper(); }
             ;
 
 options     :           				{ ; }
