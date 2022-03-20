@@ -12,7 +12,7 @@ void executeCommand(char *executable, FlexArray args)
 	{
 		wait(NULL);						// Parent waits until child terminates.
 		emptyFlexArray(&args);			// Clean array of arguments for next command.
-		free(executable);				// The executable needs to be freed too.
+		//free(executable);				// The executable needs to be freed too.
 	}
 	else
 	{									// Child: actually execute the code.

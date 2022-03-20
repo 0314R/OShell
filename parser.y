@@ -16,7 +16,7 @@ FlexArray args;
 
 void exitWrapper(){
 	//printFlexArray(args);
-	emptyFlexArray(&args);
+	//emptyFlexArray(&args);
 	free(args.arr);
 	yylex_destroy();
 	exit(EXIT_SUCCESS);
