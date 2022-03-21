@@ -14,3 +14,5 @@
 pid_t pid;
 
 int executeCommand(char *executable, FlexArray *args);
+
+char *removeQuotes(char *quotedInput);
