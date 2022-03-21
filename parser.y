@@ -54,7 +54,7 @@ options     :           				{ ; }
             ;
 
 option      : IDENTIFIER				{ add($1, &args); free($1); }
-			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &args); }
+			| QUOTED_STRING				{ $1 = removeQuotes($1); add($1, &args); free($1);}
 
 %%
 
