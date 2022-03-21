@@ -14,8 +14,7 @@
 "<"					{ return (*yytext); }
 ">"					{ return (*yytext); }
 
-"exit"				{ return EXIT; }
-[^ \t\n]+           { yylval.id = strdup(yytext); return IDENTIFIER; }
+[^ \t\n;]+          { yylval.id = strdup(yytext); return IDENTIFIER; }
 \n					{ return EOL; }
 [ \t]            	{  }
 

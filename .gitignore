@@ -1,5 +1,8 @@
+parser.tab.*
+*.gch
+
 lex.yy.c
 a.out
-parser.tab.*
 shell
-flexArray.h.gch
+
+printer.c
