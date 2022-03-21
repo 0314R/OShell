@@ -18,7 +18,7 @@ void exitWrapper(){
 %}
 
 %union {int num; char *id; }
-%token <id> IDENTIFIER
+%token <id> IDENTIFIER QUOTED_STRING
 %token OR AND SINGLEOR SINGLEAND EOL
 %type <id> executable options option
 %type <num> command pipeline chain
@@ -53,6 +53,7 @@ options     :           				{ ; }
             ;
 
 option      : IDENTIFIER				{ add($1, &args); free($1); }
+			| QUOTED_STRING				{ char *content = removeQuotes($1); printf("string without quotes: %s\n", content); }
 
 %%
 

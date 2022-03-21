@@ -29,3 +29,24 @@ int executeCommand(char *executable, FlexArray *args)
 	}
 	return WEXITSTATUS(status);
 }
+
+char *removeQuotes(char *quotedInput){
+	char *output;
+	int newLen, oldLen = strlen(quotedInput);
+
+	// printf("removing quotes from string of length %d\noriginal string: ", oldLen);
+	// for(int i=0 ; i<(oldLen+1) ; i++)
+	// 	printf("%d ", quotedInput[i]);
+	// putchar('\n');
+
+	newLen = oldLen - 2; 							//As per the two removed quotes.
+	output = malloc( (newLen+1) * sizeof(char));  	// +1 for the null character
+	memmove(output, quotedInput+1, newLen);
+
+	// printf("new string length: %d\n", newLen);
+	// for(int i=0 ; i<(newLen+1) ; i++)
+	// 	printf("%d ", output[i]);
+	// putchar('\n');
+
+	return output;
+}
