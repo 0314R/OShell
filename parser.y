@@ -46,6 +46,7 @@ command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &
             ;
 
 executable  : IDENTIFIER	        	{ add($1, &args); }
+			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &args); }
             ;
 
 options     :           				{ ; }
@@ -53,7 +54,7 @@ options     :           				{ ; }
             ;
 
 option      : IDENTIFIER				{ add($1, &args); free($1); }
-			| QUOTED_STRING				{ char *content = removeQuotes($1); printf("string without quotes: %s\n", content); }
+			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &args); }
 
 %%
 
