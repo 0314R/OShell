@@ -13,6 +13,25 @@ FlexArray newFlexArray(){
 	return fa;
 }
 
+Pipeline newPipeline(){
+	Pipeline pl;
+	int max_len = 10;		// arbitrarily assuming we will not get pipelines of length >10
+
+	pl.argArrays = malloc(max_len * sizeof(FlexArray *));
+	assert(pl.argArrays != NULL);
+
+	pl.len = 0;
+
+	return pl;
+}
+
+void newCommandEntry(Pipeline *pl){
+	FlexArray newArgsArr = newFlexArray();
+	
+	pl->argArrays[pl->len] = newArgsArr;
+	pl->len++;
+}
+
 void flex(FlexArray *fa){
 	int new_len = 2 * fa->max_len;
 	//printf("Flexing from %d to %d\n", fa->max_len, new_len);

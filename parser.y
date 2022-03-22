@@ -7,6 +7,7 @@ int yyerror(char* s);
 int yylex_destroy();
 
 FlexArray args;
+Pipeline pipeline;
 int skip = false;
 
 void exitWrapper(){
@@ -68,6 +69,7 @@ fileName    : IDENTIFIER				{ $$ = $1; }
 int main(int argc, char **argv)
 {
 	args = newFlexArray();
+	pipeline = newPipeline();
 
     yyparse();
 
