@@ -1,6 +1,7 @@
 parser.tab.*
 *.gch
 *.in
+*.out
 
 lex.yy.c
 a.out

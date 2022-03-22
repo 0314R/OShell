@@ -46,6 +46,7 @@ pipeline    : command					{ ; }
             ;
 
 redirections : '<' fileName				{ inAndOutput[0] = open($2, O_RDONLY); }
+			 | '>' fileName				{ inAndOutput[1] = open($2, O_WRONLY | O_CREAT); }
 			 |							{ ; }
 			 ;
 
