@@ -1,8 +1,10 @@
 #include "processManagement.h"
 
-int executeCommand(char *executable, FlexArray *args)
+int executeCommand(FlexArray *args, int inAndOutput[2])
 {
-	int fdIn, status;
+	int fdIn=inAndOutput[0], fdOut = inAndOutput[1], status;
+	char *executable = args->arr[0];
+	printf("fdIn = %d, fdOut = %d\n", inAndOutput[0], inAndOutput[1]);
 
 	pid = fork();
 
@@ -13,15 +15,14 @@ int executeCommand(char *executable, FlexArray *args)
 	else if( pid > 0)
 	{
 		wait(&status);	// Parent waits until child terminates. Return value 0 if success
-		free(executable);				// The executable needs to be freed too.
+		//free(executable);				// The executable needs to be freed too.
 	}
 	else
 	{									// Child: actually execute the executable.
 		addToFlexArray(NULL, args);				// The last "argument" should be NULL for execvp to work
 
-		fdIn = open("README.txt", O_RDONLY);
 		dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
-		close(fdIn);
+		dup2(fdOut, STDOUT_FILENO);
 
 		if( strcmp(executable, "exit") == 0){
 			exit(EXIT_COMMAND);					// Special exit value

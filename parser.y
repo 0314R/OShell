@@ -8,6 +8,7 @@ int yylex_destroy();
 
 Pipeline pipeline;
 int skip = false;
+int inAndOutput[2] = {0,1};
 
 void exitWrapper(){
 	//printf("exitWrapper\n");
@@ -40,16 +41,16 @@ chain       : pipeline redirections		{ $$ = $1; skip = false; }
 pipeline    : command					{ $$ = $1; }
             ;
 
-redirections : '<' fileName				{ ; }
+redirections : '<' fileName				{ ; }//inAndOutput[0] = open($2, O_RDONLY); }
 			 |							{ ; }
 			 ;
 
-command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &(pipeline.argArrays[0]) );
+command     : executable options 		{ if(skip == false) $$ = executeCommand( &(pipeline.argArrays[0]), inAndOutput);
 										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();			}
             ;
 
-executable  : IDENTIFIER	        	{ add($1, &pipeline); }
+executable  : IDENTIFIER	        	{ add($1, &pipeline); free($1); }
 			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &pipeline); }
             ;
 

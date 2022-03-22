@@ -16,6 +16,6 @@
 
 pid_t pid;
 
-int executeCommand(char *executable, FlexArray *args);
+int executeCommand(FlexArray *args, int inAndOutput[2]);
 
 char *removeQuotes(char *quotedInput);
