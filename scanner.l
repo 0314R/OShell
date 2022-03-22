@@ -1,4 +1,5 @@
 %option noyywrap
+%option always-interactive
 
 %{
 #include "parser.tab.h"

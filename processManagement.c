@@ -2,7 +2,8 @@
 
 int executeCommand(char *executable, FlexArray *args)
 {
-	int status;
+	int fdIn, status;
+
 	pid = fork();
 
 	if(pid < 0)
@@ -15,8 +16,12 @@ int executeCommand(char *executable, FlexArray *args)
 		free(executable);				// The executable needs to be freed too.
 	}
 	else
-	{									// Child: actually execute the code.
+	{									// Child: actually execute the executable.
 		add(NULL, args);				// The last "argument" should be NULL for execvp to work
+
+		fdIn = open("README.txt", O_RDONLY);
+		dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
+		close(fdIn);
 
 		if( strcmp(executable, "exit") == 0){
 			exit(EXIT_COMMAND);					// Special exit value
