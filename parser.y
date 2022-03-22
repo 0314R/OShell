@@ -6,13 +6,11 @@ int yylex(void);
 int yyerror(char* s);
 int yylex_destroy();
 
-FlexArray args;
 Pipeline pipeline;
 int skip = false;
 
 void exitWrapper(){
 	//printf("exitWrapper\n");
-	free(args.arr);
 	yylex_destroy();
 	exit(EXIT_SUCCESS);
 }
@@ -46,22 +44,21 @@ redirections : '<' fileName				{ ; }
 			 |							{ ; }
 			 ;
 
-command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
-										  emptyFlexArray(&args);		// Clean array of arguments for next command.
-										  emptyFlexArray( &(pipeline.argArrays[0]) ) ;
+command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &(pipeline.argArrays[0]) );
+										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();			}
             ;
 
-executable  : IDENTIFIER	        	{ addToFlexArray($1, &args); add($1, &pipeline); }
-			| QUOTED_STRING				{ $$ = removeQuotes($1); addToFlexArray($$, &args); add($$, &pipeline); }
+executable  : IDENTIFIER	        	{ add($1, &pipeline); }
+			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &pipeline); }
             ;
 
 options     :           				{ ; }
             | option options			{ ; }
             ;
 
-option      : IDENTIFIER				{ addToFlexArray($1, &args); add($1, &pipeline); free($1); }
-			| QUOTED_STRING				{ $1 = removeQuotes($1); addToFlexArray($1, &args); add($1, &pipeline); free($1);}
+option      : IDENTIFIER				{ add($1, &pipeline); free($1); }
+			| QUOTED_STRING				{ $1 = removeQuotes($1); add($1, &pipeline); free($1);}
 
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }
@@ -70,7 +67,6 @@ fileName    : IDENTIFIER				{ $$ = $1; }
 
 int main(int argc, char **argv)
 {
-	args = newFlexArray();
 	pipeline = newPipeline();
 	newCommandEntry(&pipeline);
 
