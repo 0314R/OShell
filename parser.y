@@ -22,7 +22,7 @@ void exitWrapper(){
 %token <id> IDENTIFIER QUOTED_STRING
 %token OR AND SINGLEOR SINGLEAND EOL
 %type <id> executable options option fileName
-%type <num> command pipeline chain
+%type <num> chain
 
 %%
 inputline   : composition inputline		{ ; }
@@ -35,19 +35,21 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{ $$ = $1; skip = false; }
+chain       : pipeline redirections		{ if(skip == false) $$ = executeCommand( &(pipeline.argArrays[0]), inAndOutput);
+										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
+										  if($$ == EXIT_COMMAND) exitWrapper();
+										  skip = false;
+									    }
             ;
 
-pipeline    : command					{ $$ = $1; }
+pipeline    : command					{ ; }
             ;
 
 redirections : '<' fileName				{ ; }//inAndOutput[0] = open($2, O_RDONLY); }
 			 |							{ ; }
 			 ;
 
-command     : executable options 		{ if(skip == false) $$ = executeCommand( &(pipeline.argArrays[0]), inAndOutput);
-										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
-										  if($$ == EXIT_COMMAND) exitWrapper();			}
+command     : executable options 		{ ; }
             ;
 
 executable  : IDENTIFIER	        	{ add($1, &pipeline); free($1); }
