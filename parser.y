@@ -38,7 +38,10 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 chain       : pipeline redirections		{ if(skip == false) $$ = executeCommand( &(pipeline.argArrays[0]), inAndOutput);
 										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();
+
 										  skip = false;
+										  inAndOutput[0] = 0;
+										  inAndOutput[1] = 1; 
 									    }
             ;
 

@@ -24,6 +24,8 @@ int executeCommand(FlexArray *args, int inAndOutput[2])
 		dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
 		dup2(fdOut, STDOUT_FILENO);
 
+		//printf("%d %d %d %d\n", fdIn, STDIN_FILENO, fdOut, STDOUT_FILENO);
+
 		if(fdIn>1) close(fdIn);
 		if(fdOut>1) close(fdOut);
 
