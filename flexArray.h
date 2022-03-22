@@ -22,8 +22,11 @@ void newCommandEntry(Pipeline *pl);
 
 void flex(FlexArray *fa);
 
-void add(char *input, FlexArray *fa);
+void add(char *input, Pipeline *pl);
+void addToFlexArray(char *input, FlexArray *fa);
 
 void printFlexArray(FlexArray fa);
 
 void emptyFlexArray(FlexArray *fa);
+
+void emptyPipeline(Pipeline *pl);

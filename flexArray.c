@@ -27,7 +27,7 @@ Pipeline newPipeline(){
 
 void newCommandEntry(Pipeline *pl){
 	FlexArray newArgsArr = newFlexArray();
-	
+
 	pl->argArrays[pl->len] = newArgsArr;
 	pl->len++;
 }
@@ -41,7 +41,11 @@ void flex(FlexArray *fa){
 	fa->max_len = new_len;
 }
 
-void add(char *input, FlexArray *fa){
+void add(char *input, Pipeline *pl){
+	addToFlexArray(input, &pl->argArrays[pl->len]);
+}
+
+void addToFlexArray(char *input, FlexArray *fa){
 	if(fa->len == fa->max_len)
 		flex(fa);			// to flex <=> to double size of array
 
@@ -80,4 +84,11 @@ void emptyFlexArray(FlexArray *fa){
 		free( fa->arr[i] );
 	}
 	fa->len = 0;
+}
+
+void emptyPipeline(Pipeline *pl){
+	for(int i=0 ; i < (pl->len) ; i++ ){
+		emptyFlexArray(&pl->argArrays[i]);
+	}
+	pl->len = 0;
 }

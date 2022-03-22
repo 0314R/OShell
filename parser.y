@@ -41,8 +41,8 @@ chain       : pipeline redirections		{ $$ = $1; skip = false; }
 pipeline    : command					{ $$ = $1; }
             ;
 
-redirections : '<' fileName				{ printf("input: %s\n", $2); }
-			 |							{ printf("no input"); }
+redirections : '<' fileName				{ ; }
+			 |							{ ; }
 			 ;
 
 command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
@@ -50,16 +50,16 @@ command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &
 										  if($$ == EXIT_COMMAND) exitWrapper();			}
             ;
 
-executable  : IDENTIFIER	        	{ add($1, &args); }
-			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &args); }
+executable  : IDENTIFIER	        	{ addToFlexArray($1, &args); add($1, &pipeline); }
+			| QUOTED_STRING				{ $$ = removeQuotes($1); addToFlexArray($$, &args); add($$, &pipeline); }
             ;
 
 options     :           				{ ; }
             | option options			{ ; }
             ;
 
-option      : IDENTIFIER				{ add($1, &args); free($1); }
-			| QUOTED_STRING				{ $1 = removeQuotes($1); add($1, &args); free($1);}
+option      : IDENTIFIER				{ addToFlexArray($1, &args); add($1, &pipeline); free($1); }
+			| QUOTED_STRING				{ $1 = removeQuotes($1); addToFlexArray($1, &args); add($1, &pipeline); free($1);}
 
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }

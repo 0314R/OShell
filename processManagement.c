@@ -17,7 +17,7 @@ int executeCommand(char *executable, FlexArray *args)
 	}
 	else
 	{									// Child: actually execute the executable.
-		add(NULL, args);				// The last "argument" should be NULL for execvp to work
+		addToFlexArray(NULL, args);				// The last "argument" should be NULL for execvp to work
 
 		fdIn = open("README.txt", O_RDONLY);
 		dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
