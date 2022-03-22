@@ -96,6 +96,5 @@ void emptyPipeline(Pipeline pl){
 	for(int i=0 ; i < (pl.len) ; i++ ){
 		printf("emptying entry %d\n", i);
 		emptyFlexArray(&pl.argArrays[i]);
-		free( pl.argArrays[i].arr );
 	}
 }

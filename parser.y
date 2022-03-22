@@ -11,6 +11,7 @@ Pipeline pipeline;
 int skip = false;
 
 void exitWrapper(){
+	printf("exitWrapper\n");
 	free(args.arr);
 	yylex_destroy();
 	exit(EXIT_SUCCESS);
@@ -47,9 +48,7 @@ redirections : '<' fileName				{ ; }
 
 command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
 										  emptyFlexArray(&args);		// Clean array of arguments for next command.
-										  emptyPipeline(&pipeline);
-										  pipeline.len = 0;
-										  newCommandEntry(&pipeline);
+										  emptyFlexArray( &(pipeline.argArrays[0]) ) ;
 										  if($$ == EXIT_COMMAND) exitWrapper();			}
             ;
 
