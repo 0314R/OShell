@@ -11,7 +11,7 @@ Pipeline pipeline;
 int skip = false;
 
 void exitWrapper(){
-	printf("exitWrapper\n");
+	//printf("exitWrapper\n");
 	free(args.arr);
 	yylex_destroy();
 	exit(EXIT_SUCCESS);
