@@ -22,14 +22,19 @@ Pipeline newPipeline(){
 
 	pl.len = 0;
 
+	printf("initialized pipeline\n");
 	return pl;
 }
 
 void newCommandEntry(Pipeline *pl){
+	printf("trying to add entry %d\n", pl->len);
+
 	FlexArray newArgsArr = newFlexArray();
 
 	pl->argArrays[pl->len] = newArgsArr;
 	pl->len++;
+
+	printf("added entry to pipeline\n");
 }
 
 void flex(FlexArray *fa){
@@ -42,7 +47,8 @@ void flex(FlexArray *fa){
 }
 
 void add(char *input, Pipeline *pl){
-	addToFlexArray(input, &pl->argArrays[pl->len]);
+	printf("trying to add to flexArray number %d\n", pl->len-1);
+	addToFlexArray(input, &(pl->argArrays[pl->len-1]) );
 }
 
 void addToFlexArray(char *input, FlexArray *fa){
@@ -86,9 +92,10 @@ void emptyFlexArray(FlexArray *fa){
 	fa->len = 0;
 }
 
-void emptyPipeline(Pipeline *pl){
-	for(int i=0 ; i < (pl->len) ; i++ ){
-		emptyFlexArray(&pl->argArrays[i]);
+void emptyPipeline(Pipeline pl){
+	for(int i=0 ; i < (pl.len) ; i++ ){
+		printf("emptying entry %d\n", i);
+		emptyFlexArray(&pl.argArrays[i]);
+		free( pl.argArrays[i].arr );
 	}
-	pl->len = 0;
 }

@@ -47,6 +47,9 @@ redirections : '<' fileName				{ ; }
 
 command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
 										  emptyFlexArray(&args);		// Clean array of arguments for next command.
+										  emptyPipeline(&pipeline);
+										  pipeline.len = 0;
+										  newCommandEntry(&pipeline);
 										  if($$ == EXIT_COMMAND) exitWrapper();			}
             ;
 
@@ -70,6 +73,7 @@ int main(int argc, char **argv)
 {
 	args = newFlexArray();
 	pipeline = newPipeline();
+	newCommandEntry(&pipeline);
 
     yyparse();
 

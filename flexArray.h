@@ -29,4 +29,4 @@ void printFlexArray(FlexArray fa);
 
 void emptyFlexArray(FlexArray *fa);
 
-void emptyPipeline(Pipeline *pl);
+void emptyPipeline(Pipeline pl);
