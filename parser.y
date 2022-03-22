@@ -20,7 +20,7 @@ void exitWrapper(){
 %union {int num; char *id; }
 %token <id> IDENTIFIER QUOTED_STRING
 %token OR AND SINGLEOR SINGLEAND EOL
-%type <id> executable options option
+%type <id> executable options option fileName
 %type <num> command pipeline chain
 
 %%
@@ -34,11 +34,15 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline					{ $$ = $1; skip = false; }
+chain       : pipeline redirections		{ $$ = $1; skip = false; }
             ;
 
 pipeline    : command					{ $$ = $1; }
             ;
+
+redirections : '<' fileName				{ printf("input: %s\n", $2); }
+			 |							{ printf("no input"); }
+			 ;
 
 command     : executable options 		{ if(skip == false) $$ = executeCommand($1, &args);
 										  emptyFlexArray(&args);		// Clean array of arguments for next command.
@@ -55,6 +59,9 @@ options     :           				{ ; }
 
 option      : IDENTIFIER				{ add($1, &args); free($1); }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); add($1, &args); free($1);}
+
+fileName    : IDENTIFIER				{ $$ = $1; }
+			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }
 
 %%
 

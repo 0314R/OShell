@@ -1,5 +1,4 @@
-should change in own branch, branched from dev.
-
-to run, execute the following commands:
-make
-./shell
+4
+3
+5
+1
