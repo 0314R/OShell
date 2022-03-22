@@ -45,7 +45,7 @@ chain       : pipeline redirections		{ if(skip == false) $$ = executeCommand( &(
 pipeline    : command					{ ; }
             ;
 
-redirections : '<' fileName				{ ; }//inAndOutput[0] = open($2, O_RDONLY); }
+redirections : '<' fileName				{ inAndOutput[0] = open($2, O_RDONLY); }
 			 |							{ ; }
 			 ;
 

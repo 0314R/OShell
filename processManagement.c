@@ -4,7 +4,7 @@ int executeCommand(FlexArray *args, int inAndOutput[2])
 {
 	int fdIn=inAndOutput[0], fdOut = inAndOutput[1], status;
 	char *executable = args->arr[0];
-	printf("fdIn = %d, fdOut = %d\n", inAndOutput[0], inAndOutput[1]);
+	//printf("fdIn = %d, fdOut = %d\n", inAndOutput[0], inAndOutput[1]);
 
 	pid = fork();
 
@@ -23,6 +23,9 @@ int executeCommand(FlexArray *args, int inAndOutput[2])
 
 		dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
 		dup2(fdOut, STDOUT_FILENO);
+
+		if(fdIn>1) close(fdIn);
+		if(fdOut>1) close(fdOut);
 
 		if( strcmp(executable, "exit") == 0){
 			exit(EXIT_COMMAND);					// Special exit value

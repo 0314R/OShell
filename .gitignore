@@ -1,8 +1,10 @@
 parser.tab.*
 *.gch
+*.in
 
 lex.yy.c
 a.out
 shell
 
 printer.c
+rr
