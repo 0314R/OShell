@@ -45,9 +45,11 @@ chain       : pipeline redirections		{ if(skip == false) $$ = executeCommand( &(
 pipeline    : command					{ ; }
             ;
 
-redirections : '<' fileName				{ inAndOutput[0] = open($2, O_RDONLY); }
-			 | '>' fileName				{ inAndOutput[1] = open($2, O_WRONLY | O_CREAT); }
-			 |							{ ; }
+redirections : '<' fileName '>' fileName { inAndOutput[0] = open($2, O_RDONLY); inAndOutput[1] = open($4, O_WRONLY | O_CREAT); }
+			 | '>' fileName '<' fileName { inAndOutput[0] = open($4, O_RDONLY); inAndOutput[1] = open($2, O_WRONLY | O_CREAT); }
+			 | '<' fileName				 { inAndOutput[0] = open($2, O_RDONLY); }
+			 | '>' fileName				 { inAndOutput[1] = open($2, O_WRONLY | O_CREAT); }
+			 |							 { ; }
 			 ;
 
 command     : executable options 		{ ; }
