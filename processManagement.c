@@ -1,13 +1,9 @@
 #include "processManagement.h"
 
 void openInput(char *fileName, int *io){
-	int fd = open(fileName, O_RDONLY);
-	if(fd < 0)
-        printf("Error opening the file\n");
-	else
-		io[0] = fd;
-
-	printf("io[0] = %d\n", io[0]);
+	io[0] = open(fileName, O_RDONLY);
+	if(io[0] < 0)
+        printf("Error: no such input file\n");
 
 	free(fileName);
 }
@@ -15,16 +11,19 @@ void openInput(char *fileName, int *io){
 void openOutput(char *fileName, int *io){
 	io[1] = open(fileName, O_RDWR | O_CREAT);
 	if(io[1] < 0)
-        printf("Error opening the file\n");
+        printf("Error: could not open/create output file\n");
 
 	free(fileName);
 }
 
-int executeCommand(FlexArray *args, int inAndOutput[2])
+int executeCommand(FlexArray *args, int io[2])
 {
-	int fdIn=inAndOutput[0], fdOut = inAndOutput[1], status, dupIn, dupOut;
+	int fdIn=io[0], fdOut = io[1], status, dupIn, dupOut;
 	char *executable = args->arr[0];
-	//printf("fdIn = %d, fdOut = %d\n", inAndOutput[0], inAndOutput[1]);
+	//printf("fdIn = %d, fdOut = %d\n", io[0], io[1]);
+
+	if(io[0] == -1 || io[1] == -1)
+		return EXIT_FAILURE;
 
 	pid = fork();
 
