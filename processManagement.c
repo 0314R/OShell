@@ -1,5 +1,19 @@
 #include "processManagement.h"
 
+void openInput(char *fileName, int *io){
+	printf("before opening input %d %d %d %d\n", io[0], STDIN_FILENO, io[1], STDOUT_FILENO);
+	io[0] = open(fileName, O_RDONLY);
+	printf("after opening input %d %d %d %d\n", io[0], STDIN_FILENO, io[1], STDOUT_FILENO);
+	free(fileName);
+}
+
+void openOutput(char *fileName, int *io){
+	printf("before opening output %d %d %d %d\n", io[0], STDIN_FILENO, io[1], STDOUT_FILENO);
+	io[1] = open(fileName, O_RDWR | O_CREAT);
+	printf("after opening output %d %d %d %d\n", io[0], STDIN_FILENO, io[1], STDOUT_FILENO);
+	free(fileName);
+}
+
 int executeCommand(FlexArray *args, int inAndOutput[2])
 {
 	int fdIn=inAndOutput[0], fdOut = inAndOutput[1], status;
@@ -21,10 +35,11 @@ int executeCommand(FlexArray *args, int inAndOutput[2])
 	{									// Child: actually execute the executable.
 		addToFlexArray(NULL, args);				// The last "argument" should be NULL for execvp to work
 
+
+		printf("before dup %d %d %d %d\n", fdIn, STDIN_FILENO, fdOut, STDOUT_FILENO);
 		dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
 		dup2(fdOut, STDOUT_FILENO);
-
-		//printf("%d %d %d %d\n", fdIn, STDIN_FILENO, fdOut, STDOUT_FILENO);
+		printf("after dup %d %d %d %d\n", fdIn, STDIN_FILENO, fdOut, STDOUT_FILENO);
 
 		if(fdIn>1) close(fdIn);
 		if(fdOut>1) close(fdOut);

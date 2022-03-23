@@ -8,7 +8,7 @@ int yylex_destroy();
 
 Pipeline pipeline;
 int skip = false;
-int inAndOutput[2] = {0,1};
+int io[2] = {0,1};
 
 void exitWrapper(){
 	//printf("exitWrapper\n");
@@ -35,23 +35,23 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{ if(skip == false) $$ = executeCommand( &(pipeline.argArrays[0]), inAndOutput);
+chain       : pipeline redirections		{ if(skip == false) $$ = executeCommand( &(pipeline.argArrays[0]), io);
 										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();
 
 										  skip = false;
-										  inAndOutput[0] = 0;
-										  inAndOutput[1] = 1; 
+										  io[0] = 0;
+										  io[1] = 1;
 									    }
             ;
 
 pipeline    : command					{ ; }
             ;
 
-redirections : '<' fileName '>' fileName { inAndOutput[0] = open($2, O_RDONLY); inAndOutput[1] = open($4, O_RDWR | O_CREAT); free ($2); free($4); }
-			 | '>' fileName '<' fileName { inAndOutput[0] = open($4, O_RDONLY); inAndOutput[1] = open($2, O_RDWR | O_CREAT); free ($2); free($4); }
-			 | '<' fileName				 { inAndOutput[0] = open($2, O_RDONLY); free ($2); }
-			 | '>' fileName				 { inAndOutput[1] = open($2, O_RDWR | O_CREAT); free ($2); }
+redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io);}
+			 | '>' fileName '<' fileName { openOutput($2, io); openInput($4, io); }
+			 | '<' fileName				 { openInput($2, io); }
+			 | '>' fileName				 { openOutput($2, io); }
 			 |							 { ; }
 			 ;
 
