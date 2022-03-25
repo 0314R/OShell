@@ -14,6 +14,7 @@
 ";"                 { return (*yytext); }
 "<"					{ return (*yytext); }
 ">"					{ return (*yytext); }
+"cd"				{ return CD; }
 \"[^"]*\"			{ yylval.id = strdup(yytext); return QUOTED_STRING; }
 [^ \t\n;<>]+        { yylval.id = strdup(yytext); return IDENTIFIER; }
 \n					{ return EOL; }

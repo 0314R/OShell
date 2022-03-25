@@ -20,8 +20,8 @@ void exitWrapper(){
 
 %union {int num; char *id; }
 %token <id> IDENTIFIER QUOTED_STRING
-%token OR AND SINGLEOR SINGLEAND EOL
-%type <id> executable options option fileName
+%token OR AND SINGLEOR SINGLEAND EOL CD
+%type <id> executable options option fileName path
 %type <num> chain
 
 %%
@@ -55,8 +55,16 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 			 |							 { ; }
 			 ;
 
-command     : executable options 		{ ; }
-            ;
+command     : CD path		 			{ if ($2 == NULL) {chdir(getenv("HOME"));} 
+										  else { 
+											if(chdir($2) != 0) {printf("No such file or directory\n"); } 
+											else { free($2);} } }
+            | executable options 		{ ; }
+			;
+
+path		: 							{ $$ = NULL; }
+			| IDENTIFIER
+			;
 
 executable  : IDENTIFIER	        	{ add($1, &pipeline); free($1); }
 			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &pipeline); }
