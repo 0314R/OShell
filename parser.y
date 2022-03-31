@@ -21,7 +21,7 @@ void exitWrapper(){
 %union {int num; char *id; }
 %token <id> IDENTIFIER QUOTED_STRING
 %token OR AND SINGLEOR SINGLEAND EOL
-%type <id> executable options option fileName
+%type <id> executable options option fileName pipeline
 %type <num> chain
 
 %%
@@ -35,7 +35,12 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{ if(skip == false) $$ = executeCommand( &(pipeline.argArrays[0]), io);
+chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0)
+											$$ = cd( &(pipeline.argArrays[0]));
+										  else if(skip == false)
+											$$ = executeCommand( &(pipeline.argArrays[0]), io);
+										  free($1);
+
 										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();
 
@@ -58,7 +63,7 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 command     : executable options 		{ ; }
             ;
 
-executable  : IDENTIFIER	        	{ add($1, &pipeline); free($1); }
+executable  : IDENTIFIER	        	{ add($1, &pipeline); }
 			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &pipeline); }
             ;
 
@@ -78,6 +83,9 @@ int main(int argc, char **argv)
 {
 	pipeline = newPipeline();
 	newCommandEntry(&pipeline);
+
+	setbuf(stdin, NULL);
+	setbuf(stdout, NULL);
 
     yyparse();
 

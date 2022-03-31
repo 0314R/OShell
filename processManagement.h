@@ -19,6 +19,7 @@ pid_t pid;
 void openInput(char *fileName, int *inAndOutput);
 void openOutput(char *fileName, int *inAndOutput);
 
+int cd(FlexArray *args);
 int executeCommand(FlexArray *args, int inAndOutput[2]);
 
 char *removeQuotes(char *quotedInput);

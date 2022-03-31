@@ -16,6 +16,11 @@ void openOutput(char *fileName, int *io){
 	free(fileName);
 }
 
+int cd(FlexArray *args){
+	printf("cd to %s\n", args->arr[1]);
+	return 1;
+}
+
 int executeCommand(FlexArray *args, int io[2])
 {
 	int fdIn=io[0], fdOut = io[1], status, dupIn, dupOut;
