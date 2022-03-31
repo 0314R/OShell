@@ -17,8 +17,21 @@ void openOutput(char *fileName, int *io){
 }
 
 int cd(FlexArray *args){
-	printf("cd to %s\n", args->arr[1]);
-	return 1;
+	//cd expects exactly one option/argument, namely the path.
+	switch( args->len - 1){		// The first "argument" in the array is the cd command itself. Therefore -1.
+		case 0: printf("Error: cd requires folder to navigate to!\n"); return 0;
+		case 1: break;
+		default: printf("Error: cd directory not found!\n"); return 0;
+	}
+
+	char *path = args->arr[1];
+	int status = chdir(path);
+	if(status != 0)
+		printf("Error: cd directory not found!\n");
+	//printf("cd status %d\n", status);
+	// printf("cd to %s\n", path);
+
+	return status;
 }
 
 int executeCommand(FlexArray *args, int io[2])
