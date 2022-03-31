@@ -41,7 +41,9 @@ chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0)
 											$$ = executeCommand( &(pipeline.argArrays[0]), io);
 										  free($1);
 
-										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
+										  //emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
+										  emptyPipeline(pipeline);
+
 										  if($$ == EXIT_COMMAND) exitWrapper();
 
 										  skip = false;
@@ -50,8 +52,12 @@ chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0)
 									    }
             ;
 
-pipeline    : command					{ ; }
+pipeline    : pipedCommand pipeline		 { printf("PIPELINE\n"); }
+			| command  					 { ; }
             ;
+
+pipedCommand : command SINGLEOR			 { printf("PIPED COMMAND\n"); newCommandEntry(&pipeline); }
+			 ;
 
 redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io);}
 			 | '>' fileName '<' fileName { openOutput($2, io); openInput($4, io); }
@@ -60,10 +66,10 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 			 |							 { ; }
 			 ;
 
-command     : executable options 		{ ; }
+command     : executable options 		{ printf("COMMAND\n");  }
             ;
 
-executable  : IDENTIFIER	        	{ add($1, &pipeline); }
+executable  : IDENTIFIER	        	{ printf("EXECUTABLE\n"); add($1, &pipeline); }
 			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &pipeline); }
             ;
 

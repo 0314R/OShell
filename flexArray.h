@@ -12,6 +12,7 @@ typedef struct FlexArray{
 typedef struct Pipeline{
 	FlexArray *argArrays;
 	int len;
+	int max_len;
 } Pipeline;
 
 FlexArray newFlexArray();
