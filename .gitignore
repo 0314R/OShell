@@ -3,6 +3,8 @@ parser.tab.*
 *.in
 *.out
 
+tests/
+
 lex.yy.c
 a.out
 shell
