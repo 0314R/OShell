@@ -36,13 +36,22 @@ int cd(FlexArray *args){
 
 int executeCommandsStatic(char commands[10][20][256], int r, int *rowLens){
 	printf("EXECUTING COMMANDS\n");
-	FlexArray fa = staticToFlexArray(commands[0], rowLens[0]);
-	printFlexArray(fa);
-	emptyFlexArray(&fa);
-	free(fa.arr);
-	// for(int i=0 ; i<r ; i++){
-	// 	staticToFlexArray
-	// }
+	FlexArray temp, *argArrays = malloc(r * sizeof(FlexArray));
+	assert(argArrays != NULL);
+
+	for(int i=0 ; i<r ; i++){
+		temp = staticToFlexArray(commands[i], rowLens[i]);
+		argArrays[i] = temp;
+	}
+
+	for(int i=0 ; i<r ; i++){
+		//printFlexArray(argArrays[i]);
+		emptyFlexArray(&argArrays[i]);
+		free(argArrays[i].arr);
+	}
+
+	free(argArrays);
+
 	return r;
 }
 
