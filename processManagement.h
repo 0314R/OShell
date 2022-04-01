@@ -21,6 +21,7 @@ void openOutput(char *fileName, int *inAndOutput);
 void resetIo(int *io);
 
 int cd(FlexArray *args);
+
 int executeCommands(char commands[10][20][256], int r, int *rowLens, int io[2]);
 int executeCommand(FlexArray *args, int inAndOutput[2]);
 

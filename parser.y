@@ -57,11 +57,15 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
+chain       : pipeline redirections		{ if(strcmp($1, "exit") == 0)
+											exitWrapper();
+
+										  /*if(strcmp($1, "cd") == 0)
 											$$ = cd( &(pipeline.argArrays[0]));
 										  else *if(skip == false)
 											$$ = executeCommand( &(pipeline.argArrays[0]), io);
-										  free($1);*/
+										  */
+										  free($1);
 										  $$ = executeCommands(pl, r, rowLens, io);
 										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);
 										  //printPipeline();
@@ -93,8 +97,8 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 command     : executable options 		{ /*printf("COM\n")*/; }
             ;
 
-executable  : IDENTIFIER	        	{ /*printf("EXE\n")*/; strcpy(pl[r][c], $1); c++; free($1);/*add($1, &pipeline);*/ }
-| QUOTED_STRING							{ /*printf("EXE\n")*/; $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; free($$); /*add($$, &pipeline);*/ }
+executable  : IDENTIFIER	        	{ /*printf("EXE\n")*/; strcpy(pl[r][c], $1); c++;;/*add($1, &pipeline);*/ }
+| QUOTED_STRING							{ /*printf("EXE\n")*/; $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; ; /*add($$, &pipeline);*/ }
             ;
 
 options     :           				{ ; }
