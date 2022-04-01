@@ -16,6 +16,16 @@ void openOutput(char *fileName, int *io){
 	free(fileName);
 }
 
+void resetIo(int *io){
+	if(io[0] > 1) // not STDIN or STDOUT
+		close(io[0]);
+	if(io[1] > 1)
+		close(io[1]);
+
+	io[0] = 0;
+	io[1] = 1;
+}
+
 int cd(FlexArray *args){
 	//cd expects exactly one option/argument, namely the path.
 	switch( args->len - 1){		// The first "argument" in the array is the cd command itself. Therefore -1.
@@ -63,25 +73,25 @@ void freePipes(int **pipes, int np){
 }
 
 void closePipeFds(int **pipes, int np, int callingProcess, int io[2]){
+	int isParent = (callingProcess == -5);
 	int exceptionIn = callingProcess-1, exceptionOut=callingProcess;
+
 	if(callingProcess == 0){
 		exceptionIn = -2; //no exception, because first file not using a pipe for input
-	} else { //this is not the first process, so we can close io[0] if it's not 0 or 1
-		if(io[0] > 1)
-			close(io[0]);
+	} else if (!isParent) { //not the first child, nor the parent (-5)
+		close(io[0]);
 	}
 	if(callingProcess == np){
 		exceptionOut = -2; //no exception, because last file not using a pipe for output
-	} else { //this is not the last process, so we can close io[1] if it's not 0 or 1
-		if(io[1] > 1)
-			close(io[1]);
+	} else if (!isParent) { //this is not the last process, so we can close io[1] if it's not 0 or 1
+		close(io[1]);
 	}
 
 	if(np > 0) printf("For process %d, I'm closing all fds but pipes[%d][0] and pipes[%d][1]\n", callingProcess, exceptionIn, exceptionOut);
 	for(int i=0 ; i < np ; i++){
-		if( (i != exceptionIn) && (pipes[i][0] > 1) )
+		if( i != exceptionIn )
 			close(pipes[i][0]);
-		if( (i != exceptionOut) && (pipes[i][1] > 1) )
+		if( i != exceptionOut )
 			close(pipes[i][1]);
 	}
 }
@@ -120,14 +130,14 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 					printf("Error with dup2 io[0]\n");
 					exit(EXIT_FAILURE);
 				}
-				if (io[0] > 1)
+				if (io[0] != STDIN_FILENO)
 					close(io[0]);
 			} else {
 				if(dup2(pipes[p-1][0], STDIN_FILENO) < 0){
 					printf("Error with dup2 pipes[%d][0]\n", p-1);
 					exit(EXIT_FAILURE);
 				}
-				if (pipes[p-1][0] > 1)
+				if (pipes[p-1][0] != STDOUT_FILENO)
 					close(pipes[p-1][0]);
 			}
 
@@ -137,14 +147,14 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 					printf("Error with dup2 io[1]\n");
 					exit(EXIT_FAILURE);
 				}
-				if (io[1] > 1)
+				if (io[1] != STDOUT_FILENO)
 					close(io[1]);
 			} else {
 				if(dup2(pipes[p][1], STDOUT_FILENO) < 0){
 					printf("Error with dup2 pipes[%d][1]\n", p);
 					exit(EXIT_FAILURE);
 				}
-				if (pipes[p][1] > 1)
+				if (pipes[p][1] != STDIN_FILENO)
 					close(pipes[p][1]);
 			}
 

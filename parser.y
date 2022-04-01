@@ -66,6 +66,9 @@ chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
 										  printf("PARENT RETURNED WITH STATUS %d\n", $$);
 										  printPipeline();
 										  resetPipeline();
+
+										  resetIo(io);
+
 										  /*
 										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();
