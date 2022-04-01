@@ -118,7 +118,7 @@ void closePipeFds(int **pipes, int np, int callingProcess, int io[2]){
 	}
 }
 
-int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2]){
+int executePipeline(char commands[10][20][256], int nc, int *rowLens, int io[2]){
 	//printf("EXECUTING %d COMMANDS WITH %d PIPES\n", nc, nc-1); //nC = number of Commands
 
 	FlexArray argArr;

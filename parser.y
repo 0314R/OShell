@@ -66,7 +66,7 @@ chain       : pipeline redirections		{
 											  if(strcmp($1, "cd") == 0)
 												  $$ = cd(pl[0], rowLens[0]);
 											  else
-										  	  	  $$ = executeCommands(pl, r, rowLens, io);
+										  	  	  $$ = executePipeline(pl, r, rowLens, io);
 
 									  	  }
 										  free($1);

@@ -23,7 +23,7 @@ void resetIo(int *io);
 int cd(char command[20][256], int len);
 int cdOld(FlexArray *args);
 
-int executeCommands(char commands[10][20][256], int r, int *rowLens, int io[2]);
+int executePipeline(char commands[10][20][256], int r, int *rowLens, int io[2]);
 int executeCommand(FlexArray *args, int inAndOutput[2]);
 
 char *removeQuotes(char *quotedInput);
