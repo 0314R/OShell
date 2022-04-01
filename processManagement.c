@@ -34,21 +34,43 @@ int cd(FlexArray *args){
 	return status;
 }
 
+int **initializePipes(int np){
+	int **pipes = malloc( np * sizeof(int *));
+	assert(pipes != NULL);
+
+	for(int i=0 ; i < np ; i++){
+		pipes[i] = malloc( 2 * sizeof(int));
+
+		if( pipe(pipes[i]) == -1){
+			printf("Error: failed to pipe.\n");
+			return NULL;
+		}
+	}
+
+	return pipes;
+}
+
+void printPipes(int **pipes, int np){
+	for(int i=0 ; i<np ; i++){
+		printf("Pipe %d: [%d,%d]\n", i, pipes[i][0], pipes[i][1]);
+	}
+}
+
+void freePipes(int **pipes, int np){
+	for(int i=0 ; i < np ; i++)
+		free(pipes[i]);
+	free(pipes);
+}
+
 int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2]){
 	printf("EXECUTING %d COMMANDS\n", nc); //nC = number of Commands
 
 	FlexArray argArr;
 
-	int **pipes = malloc( (nc-1) * sizeof(int *));
-	for(int i=0 ; i < (nc-1) ; i++){
-		pipes[i] = malloc( 2 * sizeof(int));
-		if( pipe(pipes[i]) == -1){
-			printf("Error: failed to pipe.\n");
-			return(EXIT_FAILURE);
-		} else {
-			printf("Pipe %d: [%d,%d]\n", i, pipes[i][0], pipes[i][1]);
-		}
-	}
+	int **pipes = initializePipes(nc-1);
+	if(pipes == NULL)
+		return EXIT_FAILURE;
+	printPipes(pipes, nc-1);
 
 	pid_t *pids = malloc(nc * sizeof(pid_t));
 	assert(pids != NULL);
@@ -60,7 +82,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 
 		if(pids[p] < 0){
 			printf("Error: failed to fork\n");
-			return(EXIT_FAILURE);
+			exit(EXIT_FAILURE);
 		}
 		else if(pids[p] == 0){
 			printf("I am child %d\n", p);
@@ -82,9 +104,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	}
 	printf("All children done\n");
 
-	for(int i=0 ; i < (nc-1) ; i++)
-		free(pipes[i]);
-	free(pipes);
+	freePipes(pipes, nc-1);
 	free(pids);
 	free(status);
 
