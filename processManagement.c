@@ -150,6 +150,11 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 			}
 
 			argArr = staticToFlexArray(commands[p], rowLens[p]);
+
+			if( execvp(argArr.arr[0], argArr.arr) == -1){
+				printf("Error: command not found!\n");
+				exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
+			}
 			//printFlexArray(argArr);
 			emptyFlexArray(&argArr);
 			free(argArr.arr);
