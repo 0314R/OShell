@@ -59,10 +59,10 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 
 chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
 											$$ = cd( &(pipeline.argArrays[0]));
-										  else if(skip == false)
+										  else *if(skip == false)
 											$$ = executeCommand( &(pipeline.argArrays[0]), io);
 										  free($1);*/
-										  executeCommandsStatic(pl, r, rowLens);
+										  executeCommands(pl, r, rowLens, io);
 										  printPipeline();
 										  resetPipeline();
 										  /*
@@ -83,10 +83,10 @@ pipeline 	: pipedCommand pipeline		{ ; }
 pipedCommand : command SINGLEOR			 { rowLens[r] = c; r++;  c = 0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
 			 ;
 
-redirections : '<' fileName '>' fileName { ; }//openInput($2, io); openOutput($4, io);}
-			 | '>' fileName '<' fileName { ; }//openOutput($2, io); openInput($4, io); }
-			 | '<' fileName				 { ; }//openInput($2, io); }
-			 | '>' fileName				 { ; }//openOutput($2, io); }
+redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io);}
+			 | '>' fileName '<' fileName { openOutput($2, io); openInput($4, io); }
+			 | '<' fileName				 { openInput($2, io); }
+			 | '>' fileName				 { openOutput($2, io); }
 			 |							 { ; }
 			 ;
 

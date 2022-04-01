@@ -34,8 +34,12 @@ int cd(FlexArray *args){
 	return status;
 }
 
-int executeCommandsStatic(char commands[10][20][256], int r, int *rowLens){
+int executeCommands(char commands[10][20][256], int r, int *rowLens, int io[2]){
 	printf("EXECUTING COMMANDS\n");
+
+	/*
+		First phase: obtain array of FlexArrays, each FlexArray being the argument array for a command.
+	*/
 	FlexArray temp, *argArrays = malloc(r * sizeof(FlexArray));
 	assert(argArrays != NULL);
 
@@ -45,10 +49,18 @@ int executeCommandsStatic(char commands[10][20][256], int r, int *rowLens){
 	}
 
 	for(int i=0 ; i<r ; i++){
-		//printFlexArray(argArrays[i]);
+		printFlexArray(argArrays[i]);
 		emptyFlexArray(&argArrays[i]);
 		free(argArrays[i].arr);
 	}
+
+	/*
+		Second phase: fork and handle children separately
+	*/
+
+
+
+
 
 	free(argArrays);
 

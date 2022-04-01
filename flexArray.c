@@ -19,6 +19,7 @@ FlexArray staticToFlexArray(char matrixRow[20][256], int len){
 	for(int i=0 ; i<len ; i++){
 		add(matrixRow[i], &fa);
 	}
+	add(NULL, &fa);
 
 	return fa;
 }
