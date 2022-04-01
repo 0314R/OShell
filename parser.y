@@ -59,8 +59,10 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 
 chain       : pipeline redirections		{
 										  if(skip == false){
-											  if(strcmp($1, "exit") == 0)
+											  if(strcmp($1, "exit") == 0){
+												free($1);
   												exitWrapper();
+											  }
 										  	  $$ = executeCommands(pl, r, rowLens, io);
 									  	  }
 										  free($1);
@@ -84,7 +86,7 @@ pipeline 	: pipedCommand pipeline		{ ; }
 pipedCommand : command SINGLEOR			 { rowLens[r] = c; r++;  c = 0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
 			 ;
 
-redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io);}
+redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io); }
 			 | '>' fileName '<' fileName { openOutput($2, io); openInput($4, io); }
 			 | '<' fileName				 { openInput($2, io); }
 			 | '>' fileName				 { openOutput($2, io); }
