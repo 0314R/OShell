@@ -38,6 +38,28 @@ void exitWrapper(){
 	exit(EXIT_SUCCESS);
 }
 
+int executeChain(char *value){
+	int status;
+
+	if(skip == false){
+		if(strcmp(value, "exit") == 0){
+		  free(value);
+		  exitWrapper();
+		}
+		if(strcmp(value, "cd") == 0)
+			status = cd(pl[0], rowLens[0]);
+		else
+			status = executePipeline(pl, r, rowLens, io);
+	}
+	free(value);
+	resetPipeline();
+
+	skip = false;
+	resetIo(io);
+
+	return status;
+}
+
 %}
 
 %union {int num; char *id; }
@@ -57,30 +79,7 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{
-										  if(skip == false){
-											  if(strcmp($1, "exit") == 0){
-												free($1);
-  												exitWrapper();
-											  }
-											  if(strcmp($1, "cd") == 0)
-												  $$ = cd(pl[0], rowLens[0]);
-											  else
-										  	  	  $$ = executePipeline(pl, r, rowLens, io);
-
-									  	  }
-										  free($1);
-										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);
-										  //printPipeline();
-										  resetPipeline();
-										  /*
-										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
-										  if($$ == EXIT_COMMAND) exitWrapper();
-										  */
-										  skip = false;
-										  resetIo(io);
-
-									    }
+chain       : pipeline redirections		{ $$ = executeChain($1); }
             ;
 
 pipeline 	: pipedCommand pipeline		{ free($2); }
