@@ -213,6 +213,95 @@ int executePipeline(char commands[10][20][256], int nc, int *rowLens, int io[2])
 
 	return parentStatus;
 }
+//
+// int executeBackGroundPipeline(char commands[10][20][256], int nc, int *rowLens, int io[2]){
+// 	FlexArray argArr;
+//
+// 	pid_t *pids = malloc(nc * sizeof(pid_t));
+// 	assert(pids != NULL);
+// 	int *status = malloc(nc * sizeof(int)), parentStatus = EXIT_SUCCESS;
+// 	assert(status != NULL);
+//
+// 	for(int p=0 ; p<nc ; p++){
+// 		pids[p] = fork();
+//
+// 		if(pids[p] < 0){
+// 			printf("Error: failed to fork\n");
+// 			exit(EXIT_FAILURE);
+// 		}
+// 		else if(pids[p] == 0){
+// 			//close unused file descriptors
+// 			closePipeFds(pipes, nc-1, p, io);
+//
+// 			//printf("I am child %d\n", p);
+//
+// 			// set input file, different for first process
+// 			if(p == 0){
+// 				if(dup2(io[0], STDIN_FILENO) < 0){
+// 					printf("Error with dup2 io[0]\n");
+// 					exit(EXIT_FAILURE);
+// 				}
+// 				if (io[0] != STDIN_FILENO)
+// 					close(io[0]);
+// 			} else {
+// 				if(dup2(pipes[p-1][0], STDIN_FILENO) < 0){
+// 					printf("Error with dup2 pipes[%d][0]\n", p-1);
+// 					exit(EXIT_FAILURE);
+// 				}
+// 				if (pipes[p-1][0] != STDIN_FILENO)
+// 					close(pipes[p-1][0]);
+// 			}
+//
+// 			// set output file, different for last process
+// 			if(p == nc-1){
+// 				if(dup2(io[1], STDOUT_FILENO) < 0){
+// 					printf("Error with dup2 io[1]\n");
+// 					exit(EXIT_FAILURE);
+// 				}
+// 				if (io[1] != STDOUT_FILENO)
+// 					close(io[1]);
+// 			} else {
+// 				if(dup2(pipes[p][1], STDOUT_FILENO) < 0){
+// 					printf("Error with dup2 pipes[%d][1]\n", p);
+// 					exit(EXIT_FAILURE);
+// 				}
+// 				if (pipes[p][1] != STDOUT_FILENO)
+// 					close(pipes[p][1]);
+// 			}
+//
+// 			argArr = staticToFlexArray(commands[p], rowLens[p]);
+//
+// 			if( execvp(argArr.arr[0], argArr.arr) == -1){
+// 				printf("Error: command not found!\n");
+// 				emptyFlexArray(&argArr);
+// 				free(argArr.arr);
+// 				exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
+// 			}
+// 			//printFlexArray(argArr);
+// 			emptyFlexArray(&argArr);
+// 			free(argArr.arr);
+//
+// 			exit(EXIT_SUCCESS);
+// 		}
+// 	}
+//
+// 	// Only the parent process can get here.
+// 	closePipeFds(pipes, nc-1, -5, io); //-2 because there will be no exceptions in closing the pipes.
+// 	for(int p=0 ; p<nc ; p++){
+// 		waitpid(pids[p], &status[p], 0);
+// 		//printf("child %d returned with %d==%d\n", p, status[p], WEXITSTATUS(status[p]));
+// 		if(status[p] != EXIT_SUCCESS){
+// 			parentStatus = EXIT_FAILURE;
+// 		}
+// 	}
+// 	//printf("All children done\n");
+//
+// 	freePipes(pipes, nc-1);
+// 	free(pids);
+// 	free(status);
+//
+// 	return parentStatus;
+// }
 
 int executeCommand(FlexArray *args, int io[2])
 {
