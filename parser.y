@@ -60,11 +60,13 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 chain       : pipeline redirections		{
 										  if(skip == false){
 											  if(strcmp($1, "exit") == 0){
+												printf("Free %s\n", $1);
 												free($1);
   												exitWrapper();
 											  }
 										  	  $$ = executeCommands(pl, r, rowLens, io);
 									  	  }
+										  printf("Free %s\n", $1);
 										  free($1);
 										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);
 										  //printPipeline();
@@ -104,8 +106,8 @@ options     :           				{ ; }
             | option options			{ ; }
             ;
 
-option      : IDENTIFIER				{ /*printf("OPT\n");*/ strcpy(pl[r][c], $1); c++; /*add($1, &pipeline); */free($1); }
-			| QUOTED_STRING				{ /*printf("OPT\n");*/ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline);*/ free($1);}
+option      : IDENTIFIER				{ /*printf("OPT\n");*/ strcpy(pl[r][c], $1); c++; free($1); }
+			| QUOTED_STRING				{ /*printf("OPT\n");*/ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; free($1);}
 
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }

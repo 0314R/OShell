@@ -163,6 +163,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 
 			if( execvp(argArr.arr[0], argArr.arr) == -1){
 				printf("Error: command not found!\n");
+				emptyFlexArray(&argArr);
 				free(argArr.arr);
 				exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
 			}
