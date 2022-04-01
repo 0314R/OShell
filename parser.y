@@ -7,8 +7,30 @@ int yyerror(char* s);
 int yylex_destroy();
 
 Pipeline pipeline;
+char pl[10][20][256];
+int rowLens[10];
+int r, c;
 int skip = false;
 int io[2] = {0,1};
+
+void resetPipeline(){
+	for(int i=0 ; i<10 ; i++){
+		rowLens[i] = 0;
+	}
+	r = c = 0;
+}
+
+void printPipeline(){
+	printf("PIPELINE:\n");
+	for(int i=0 ; i<r ; i++){
+		printf("[%d] ", rowLens[i]);
+		for(int j=0 ; j<rowLens[i] ; j++){
+			printf("%s ", pl[i][j]);
+		}
+		putchar('\n');
+	}
+	putchar('\n');
+}
 
 void exitWrapper(){
 	//printf("exitWrapper\n");
@@ -35,44 +57,48 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0)
+chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
 											$$ = cd( &(pipeline.argArrays[0]));
 										  else if(skip == false)
 											$$ = executeCommand( &(pipeline.argArrays[0]), io);
-										  free($1);
+										  free($1);*/
 
+										  printPipeline();
+										  resetPipeline();
+										  /*
 										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();
 
 										  skip = false;
 										  io[0] = 0;
 										  io[1] = 1;
+										  */
 									    }
             ;
 
-pipeline    : command					{ ; }
+pipeline    : command					{ rowLens[r] = c; r++;  c = 0; printf("finished reading command, [%d,%d]\n", r, c); }
             ;
 
-redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io);}
-			 | '>' fileName '<' fileName { openOutput($2, io); openInput($4, io); }
-			 | '<' fileName				 { openInput($2, io); }
-			 | '>' fileName				 { openOutput($2, io); }
+redirections : '<' fileName '>' fileName { ; }//openInput($2, io); openOutput($4, io);}
+			 | '>' fileName '<' fileName { ; }//openOutput($2, io); openInput($4, io); }
+			 | '<' fileName				 { ; }//openInput($2, io); }
+			 | '>' fileName				 { ; }//openOutput($2, io); }
 			 |							 { ; }
 			 ;
 
 command     : executable options 		{ ; }
             ;
 
-executable  : IDENTIFIER	        	{ add($1, &pipeline); }
-			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &pipeline); }
+executable  : IDENTIFIER	        	{ strcpy(pl[r][c], $1); c++; free($1);/*add($1, &pipeline);*/ }
+| QUOTED_STRING							{ $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; /*add($$, &pipeline);*/ }
             ;
 
 options     :           				{ ; }
             | option options			{ ; }
             ;
 
-option      : IDENTIFIER				{ add($1, &pipeline); free($1); }
-			| QUOTED_STRING				{ $1 = removeQuotes($1); add($1, &pipeline); free($1);}
+option      : IDENTIFIER				{ strcpy(pl[r][c], $1); c++; /*add($1, &pipeline); */free($1); }
+			| QUOTED_STRING				{ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline);*/ free($1);}
 
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }
@@ -81,8 +107,8 @@ fileName    : IDENTIFIER				{ $$ = $1; }
 
 int main(int argc, char **argv)
 {
-	pipeline = newPipeline();
-	newCommandEntry(&pipeline);
+	//pipeline = newPipeline();
+	//newCommandEntry(&pipeline);
 
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
