@@ -6,9 +6,8 @@ int yylex(void);
 int yyerror(char* s);
 int yylex_destroy();
 
-Pipeline pipeline;
-char pl[10][20][256];
-int rowLens[10];
+char pl[10][20][256]; //this static array will contain all the args of all commands of the current pipeline.
+int rowLens[10];	  //this goes together with the above: says how long each row is, i.e. how many args per command.
 int r, c;
 int skip = false;
 int io[2] = {0,1};
@@ -33,7 +32,6 @@ void printPipeline(){
 }
 
 void exitWrapper(){
-	//printf("exitWrapper\n");
 	yylex_destroy();
 	exit(EXIT_SUCCESS);
 }
@@ -75,6 +73,7 @@ inputline   : composition inputline		{ ; }
 
 composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain OR					{ if($1 == 0) skip = true; }
+			| chain SINGLEAND			{ ; }
 			| chain EOL					{ ; }
 			| chain ';'					{ ; }
 			;
@@ -104,19 +103,19 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 			 |							 { ; }
 			 ;
 
-command     : executable options 		{ /*printf("COM\n")*/; }
+command     : executable options 		{ ; }
             ;
 
-executable  : IDENTIFIER	        	{ /*printf("EXE\n")*/; strcpy(pl[r][c], $1); c++;;/*add($1, &pipeline);*/ }
-| QUOTED_STRING							{ /*printf("EXE\n")*/; $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; ; /*add($$, &pipeline);*/ }
+executable  : IDENTIFIER	        	{ strcpy(pl[r][c], $1); c++; }
+			| QUOTED_STRING				{ $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; }
             ;
 
 options     :           				{ ; }
             | option options			{ ; }
             ;
 
-option      : IDENTIFIER				{ /*printf("OPT\n");*/ strcpy(pl[r][c], $1); c++; free($1); }
-			| QUOTED_STRING				{ /*printf("OPT\n");*/ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; free($1);}
+option      : IDENTIFIER				{ strcpy(pl[r][c], $1); c++; free($1); }
+			| QUOTED_STRING				{ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; free($1);}
 			;
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }
@@ -125,9 +124,6 @@ fileName    : IDENTIFIER				{ $$ = $1; }
 
 int main(int argc, char **argv)
 {
-	//pipeline = newPipeline();
-	//newCommandEntry(&pipeline);
-
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
 

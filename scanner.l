@@ -20,15 +20,3 @@
 [ \t]            	{  }
 
 %%
-/* code for testing
-int main(int argc, char **argv)
-{
-	int toknr;
-
-	while(toknr = yylex()){
-		printf("%d\n", toknr);
-	}
-
-    return 0;
-}
-*/
