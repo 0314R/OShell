@@ -62,13 +62,21 @@ void freePipes(int **pipes, int np){
 	free(pipes);
 }
 
-void closePipeFds(int **pipes, int np, int callingProcess){
+void closePipeFds(int **pipes, int np, int callingProcess, int io[2]){
 	int exceptionIn = callingProcess-1, exceptionOut=callingProcess;
 	if(callingProcess == 0){
 		exceptionIn = -2; //no exception, because first file not using a pipe for input
-	} else if(callingProcess == np){
-		exceptionOut = -2; //no exception, because last file not using a pipe for output
+	} else { //this is not the first process, so we can close io[0] if it's not 0 or 1
+		if(io[0] > 1)
+			close(io[0]);
 	}
+	if(callingProcess == np){
+		exceptionOut = -2; //no exception, because last file not using a pipe for output
+	} else { //this is not the last process, so we can close io[1] if it's not 0 or 1
+		if(io[1] > 1)
+			close(io[1]);
+	}
+
 	if(np > 0) printf("For process %d, I'm closing all fds but pipes[%d][0] and pipes[%d][1]\n", callingProcess, exceptionIn, exceptionOut);
 	for(int i=0 ; i < np ; i++){
 		if( (i != exceptionIn) && (pipes[i][0] > 1) )
@@ -102,7 +110,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 		}
 		else if(pids[p] == 0){
 			//close unused file descriptors
-			closePipeFds(pipes, nc-1, p);
+			closePipeFds(pipes, nc-1, p, io);
 
 			printf("I am child %d\n", p);
 
@@ -150,7 +158,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	}
 
 	// Only the parent process can get here.
-	closePipeFds(pipes, nc-1, -2); //-2 because there will be no exceptions in closing the pipes.
+	closePipeFds(pipes, nc-1, -2, io); //-2 because there will be no exceptions in closing the pipes.
 	for(int p=0 ; p<nc ; p++){
 		waitpid(pids[p], &status[p], 0);
 		printf("child %d returned with %d==%d\n", p, status[p], WEXITSTATUS(status[p]));
