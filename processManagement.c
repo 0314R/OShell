@@ -41,19 +41,20 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	/*
 		First phase: obtain array of FlexArrays, each FlexArray being the argument array for a command.
 	*/
-	FlexArray temp, *argArrays = malloc(nc * sizeof(FlexArray));
-	assert(argArrays != NULL);
+	// FlexArray temp, *argArrays = malloc(nc * sizeof(FlexArray));
+	// assert(argArrays != NULL);
+	FlexArray argArr;
 
-	for(int i=0 ; i<nc ; i++){
-		temp = staticToFlexArray(commands[i], rowLens[i]);
-		argArrays[i] = temp;
-	}
-
-	for(int i=0 ; i<nc ; i++){
-		printFlexArray(argArrays[i]);
-		emptyFlexArray(&argArrays[i]);
-		free(argArrays[i].arr);
-	}
+	// for(int i=0 ; i<nc ; i++){
+	// 	temp = staticToFlexArray(commands[i], rowLens[i]);
+	// 	argArrays[i] = temp;
+	// }
+	//
+	// for(int i=0 ; i<nc ; i++){
+	// 	printFlexArray(argArrays[i]);
+	// 	emptyFlexArray(&argArrays[i]);
+	// 	free(argArrays[i].arr);
+	// }
 
 	/*
 		Second phase: fork and handle children separately
@@ -71,6 +72,10 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 		}
 		else if(pids[p] == 0){
 			printf("I am child %d\n", p);
+			argArr = staticToFlexArray(commands[p], rowLens[p]);
+			printFlexArray(argArr);
+			emptyFlexArray(&argArr);
+			free(argArr.arr);
 			exit(EXIT_SUCCESS);
 		}
 	}
@@ -85,7 +90,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 
 	free(pids);
 	free(status);
-	free(argArrays);
+	//free(argArrays);
 
 	return parentStatus;
 }
