@@ -62,8 +62,24 @@ void freePipes(int **pipes, int np){
 	free(pipes);
 }
 
+void closePipeFds(int **pipes, int np, int callingProcess){
+	int exceptionIn = callingProcess-1, exceptionOut=callingProcess;
+	if(callingProcess == 0){
+		exceptionIn = -2; //no exception, because first file not using a pipe for input
+	} else if(callingProcess == np){
+		exceptionOut = -2; //no exception, because last file not using a pipe for output
+	}
+	if(np > 0) printf("For process %d, I'm closing all fds but pipes[%d][0] and pipes[%d][1]\n", callingProcess, exceptionIn, exceptionOut);
+	for(int i=0 ; i < np ; i++){
+		if( (i != exceptionIn) && (pipes[i][0] > 1) )
+			close(pipes[i][0]);
+		if( (i != exceptionOut) && (pipes[i][1] > 1) )
+			close(pipes[i][1]);
+	}
+}
+
 int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2]){
-	printf("EXECUTING %d COMMANDS\n", nc); //nC = number of Commands
+	printf("EXECUTING %d COMMANDS WITH %d PIPES\n", nc, nc-1); //nC = number of Commands
 
 	FlexArray argArr;
 
@@ -85,7 +101,44 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 			exit(EXIT_FAILURE);
 		}
 		else if(pids[p] == 0){
+			//close unused file descriptors
+			closePipeFds(pipes, nc-1, p);
+
 			printf("I am child %d\n", p);
+
+			// set input file, different for first process
+			if(p == 0){
+				if(dup2(io[0], STDIN_FILENO) < 0){
+					printf("Error with dup2 io[0]\n");
+					exit(EXIT_FAILURE);
+				}
+				if (io[0] > 1)
+					close(io[0]);
+			} else {
+				if(dup2(pipes[p-1][0], STDIN_FILENO) < 0){
+					printf("Error with dup2 pipes[%d][0]\n", p-1);
+					exit(EXIT_FAILURE);
+				}
+				if (pipes[p-1][0] > 1)
+					close(pipes[p-1][0]);
+			}
+
+			// set output file, different for last process
+			if(p == nc-1){
+				if(dup2(io[1], STDOUT_FILENO) < 0){
+					printf("Error with dup2 io[1]\n");
+					exit(EXIT_FAILURE);
+				}
+				if (io[1] > 1)
+					close(io[1]);
+			} else {
+				if(dup2(pipes[p][1], STDOUT_FILENO) < 0){
+					printf("Error with dup2 pipes[%d][1]\n", p);
+					exit(EXIT_FAILURE);
+				}
+				if (pipes[p][1] > 1)
+					close(pipes[p][1]);
+			}
 
 			argArr = staticToFlexArray(commands[p], rowLens[p]);
 			//printFlexArray(argArr);
@@ -95,6 +148,9 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 			exit(EXIT_SUCCESS);
 		}
 	}
+
+	// Only the parent process can get here.
+	closePipeFds(pipes, nc-1, -2); //-2 because there will be no exceptions in closing the pipes.
 	for(int p=0 ; p<nc ; p++){
 		waitpid(pids[p], &status[p], 0);
 		printf("child %d returned with %d==%d\n", p, status[p], WEXITSTATUS(status[p]));
