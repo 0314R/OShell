@@ -37,60 +37,56 @@ int cd(FlexArray *args){
 int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2]){
 	printf("EXECUTING %d COMMANDS\n", nc); //nC = number of Commands
 
-
-	/*
-		First phase: obtain array of FlexArrays, each FlexArray being the argument array for a command.
-	*/
-	// FlexArray temp, *argArrays = malloc(nc * sizeof(FlexArray));
-	// assert(argArrays != NULL);
 	FlexArray argArr;
 
-	// for(int i=0 ; i<nc ; i++){
-	// 	temp = staticToFlexArray(commands[i], rowLens[i]);
-	// 	argArrays[i] = temp;
-	// }
-	//
-	// for(int i=0 ; i<nc ; i++){
-	// 	printFlexArray(argArrays[i]);
-	// 	emptyFlexArray(&argArrays[i]);
-	// 	free(argArrays[i].arr);
-	// }
-
-	/*
-		Second phase: fork and handle children separately
-	*/
+	int **pipes = malloc( (nc-1) * sizeof(int *));
+	for(int i=0 ; i < (nc-1) ; i++){
+		pipes[i] = malloc( 2 * sizeof(int));
+		if( pipe(pipes[i]) == -1){
+			printf("Error: failed to pipe.\n");
+			return(EXIT_FAILURE);
+		} else {
+			printf("Pipe %d: [%d,%d]\n", i, pipes[i][0], pipes[i][1]);
+		}
+	}
 
 	pid_t *pids = malloc(nc * sizeof(pid_t));
-	int *status = malloc(nc * sizeof(int)), parentStatus = EXIT_SUCCESS;
 	assert(pids != NULL);
+	int *status = malloc(nc * sizeof(int)), parentStatus = EXIT_SUCCESS;
+	assert(status != NULL);
 
 	for(int p=0 ; p<nc ; p++){
 		pids[p] = fork();
 
 		if(pids[p] < 0){
 			printf("Error: failed to fork\n");
+			return(EXIT_FAILURE);
 		}
 		else if(pids[p] == 0){
 			printf("I am child %d\n", p);
+
 			argArr = staticToFlexArray(commands[p], rowLens[p]);
-			printFlexArray(argArr);
+			//printFlexArray(argArr);
 			emptyFlexArray(&argArr);
 			free(argArr.arr);
+
 			exit(EXIT_SUCCESS);
 		}
 	}
 	for(int p=0 ; p<nc ; p++){
 		waitpid(pids[p], &status[p], 0);
+		printf("child %d returned with %d==%d\n", p, status[p], WEXITSTATUS(status[p]));
 		if(status[p] != EXIT_SUCCESS){
-			printf("child %d returned with ERROR %d\n", p, status[p]);
 			parentStatus = EXIT_FAILURE;
 		}
 	}
 	printf("All children done\n");
 
+	for(int i=0 ; i < (nc-1) ; i++)
+		free(pipes[i]);
+	free(pipes);
 	free(pids);
 	free(status);
-	//free(argArrays);
 
 	return parentStatus;
 }
