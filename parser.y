@@ -118,10 +118,10 @@ options     :           				{ ; }
 
 option      : IDENTIFIER				{ /*printf("OPT\n");*/ strcpy(pl[r][c], $1); c++; free($1); }
 			| QUOTED_STRING				{ /*printf("OPT\n");*/ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; free($1);}
-
+			;
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }
-
+			;
 %%
 
 int main(int argc, char **argv)
