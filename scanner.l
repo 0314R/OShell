@@ -14,8 +14,8 @@
 ";"                 { return (*yytext); }
 "<"					{ return (*yytext); }
 ">"					{ return (*yytext); }
-\"[^"]*\"			{ yylval.id = strdup(yytext); printf("Allo QS %s\n", yytext); return QUOTED_STRING; }
-[^ \t\n;<>]+        { yylval.id = strdup(yytext); printf("Allo ID %s\n", yytext); return IDENTIFIER; }
+\"[^"]*\"			{ yylval.id = strdup(yytext); return QUOTED_STRING; }
+[^ \t\n;<>]+        { yylval.id = strdup(yytext); return IDENTIFIER; }
 \n					{ return EOL; }
 [ \t]            	{  }
 

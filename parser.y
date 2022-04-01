@@ -60,13 +60,11 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 chain       : pipeline redirections		{
 										  if(skip == false){
 											  if(strcmp($1, "exit") == 0){
-												printf("Free %s\n", $1);
 												free($1);
   												exitWrapper();
 											  }
 										  	  $$ = executeCommands(pl, r, rowLens, io);
 									  	  }
-										  printf("Free %s\n", $1);
 										  free($1);
 										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);
 										  //printPipeline();
@@ -81,7 +79,7 @@ chain       : pipeline redirections		{
 									    }
             ;
 
-pipeline 	: pipedCommand pipeline		{ ; }
+pipeline 	: pipedCommand pipeline		{ free($2); }
 			| command					{ rowLens[r] = c; r++; c=0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
             ;
 
