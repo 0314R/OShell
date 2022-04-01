@@ -63,17 +63,18 @@ void freePipes(int **pipes, int np){
 }
 
 void closePipeFds(int **pipes, int np, int callingProcess, int io[2]){
+	//int isParent = (callingProcess == -5);
 	int exceptionIn = callingProcess-1, exceptionOut=callingProcess;
 	if(callingProcess == 0){
 		exceptionIn = -2; //no exception, because first file not using a pipe for input
 	} else { //this is not the first process, so we can close io[0] if it's not 0 or 1
-		if(io[0] > 1)
+		if(io[0] != STDIN_FILENO)
 			close(io[0]);
 	}
 	if(callingProcess == np){
 		exceptionOut = -2; //no exception, because last file not using a pipe for output
 	} else { //this is not the last process, so we can close io[1] if it's not 0 or 1
-		if(io[1] > 1)
+		if(io[1] != STDOUT_FILENO)
 			close(io[1]);
 	}
 
