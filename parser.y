@@ -67,7 +67,7 @@ chain       : pipeline redirections		{
 												  $$ = cd(pl[0], rowLens[0]);
 											  else
 										  	  	  $$ = executeCommands(pl, r, rowLens, io);
-											  
+
 									  	  }
 										  free($1);
 										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);
@@ -94,6 +94,14 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 			 | '>' fileName '<' fileName { openOutput($2, io); openInput($4, io); }
 			 | '<' fileName				 { openInput($2, io); }
 			 | '>' fileName				 { openOutput($2, io); }
+			 | '<' '>' fileName			 { printf("Error: invalid syntax!\n"); free($3); skip = true; }
+			 | '>' '<' fileName			 { printf("Error: invalid syntax!\n"); free($3); skip = true; }
+			 | '<' fileName '>'			 { printf("Error: invalid syntax!\n"); free($2); skip = true; }
+			 | '>' fileName '<'			 { printf("Error: invalid syntax!\n"); free($2); skip = true; }
+			 | '<' '>'					 { printf("Error: invalid syntax!\n"); skip = true; }
+			 | '>' '<'					 { printf("Error: invalid syntax!\n"); skip = true; }
+			 | '<'						 { printf("Error: invalid syntax!\n"); skip = true; }
+			 | '>'						 { printf("Error: invalid syntax!\n"); skip = true; }
 			 |							 { ; }
 			 ;
 
