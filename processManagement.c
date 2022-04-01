@@ -81,6 +81,65 @@ int executeCommand(FlexArray *args, int io[2])
 	return WEXITSTATUS(status);
 }
 
+int executeCommands(Pipeline pl, int io[2])
+{
+	int fdIn, fdOut, status, dupIn, dupOut, pipeFds[2];
+	// char *executable = args->arr[0];
+	FlexArray *args1 = & (pl.argArrays[0]);
+	FlexArray *args2 = & (pl.argArrays[1]);
+	char *executable1 = args1->arr[0];
+	char *executable2 = args2->arr[0];
+	//printf("fdIn = %d, fdOut = %d\n", io[0], io[1]);
+	printf("exec1 %s\nexec2 %s\n", executable1, executable2);
+	return 0;
+
+	if(io[0] == -1 || io[1] == -1)
+		return EXIT_FAILURE;
+
+	if(pipe(pipeFds) == -1){
+		printf("Error: Failed to create pipe\n");
+		return EXIT_FAILURE;
+	}
+
+	pid1 = fork();
+	if(pid1 < 0)
+		fprintf(stderr, "fork fail\n");
+	else if( pid1 > 0)
+		wait(&status);	// Parent waits until child terminates. Return value 0 if success
+		//free(executable);				// The executable needs to be freed too.
+	else
+	{									// Child: actually execute the executable.
+		addToFlexArray(NULL, args1);				// The last "argument" should be NULL for execvp to work
+		fdIn = io[0];
+		fdOut = pipeFds[1];
+
+		//close the fds that are not used by this child.
+		close(io[1]);
+		close(pipeFds[0]);
+
+		dupIn = dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
+		if(dupIn < 0)
+	        printf("Error opening the input file\n");
+		dupOut = dup2(fdOut, STDOUT_FILENO);
+		if(dupOut < 0)
+	        printf("Error opening the output file\n");
+
+		//these fds are not needed anymore after dup2.
+		close(fdIn);
+		close(fdOut);
+
+		if( strcmp(executable1, "exit") == 0){
+			exit(EXIT_COMMAND);					// Special exit value
+		}
+		else if( execvp(executable1, args1->arr) == -1){
+			printf("Error: command not found!\n");
+			exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
+		}
+
+	}
+	return WEXITSTATUS(status);
+}
+
 char *removeQuotes(char *quotedInput){
 	char *output;
 	int newLen, oldLen = strlen(quotedInput);

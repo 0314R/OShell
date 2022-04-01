@@ -38,7 +38,8 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0)
 											$$ = cd( &(pipeline.argArrays[0]));
 										  else if(skip == false)
-											$$ = executeCommand( &(pipeline.argArrays[0]), io);
+											//$$ = executeCommand( &(pipeline.argArrays[0]), io);
+											$$ = executeCommands( pipeline, io);
 										  free($1);
 
 										  //emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
@@ -52,11 +53,11 @@ chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0)
 									    }
             ;
 
-pipeline    : pipedCommand pipeline		 { printf("PIPELINE\n"); }
+pipeline    : pipedCommand pipeline		 { /*printf("PIPELINE\n")*/; }
 			| command  					 { ; }
             ;
 
-pipedCommand : command SINGLEOR			 { printf("PIPED COMMAND\n"); newCommandEntry(&pipeline); }
+pipedCommand : command SINGLEOR			 { /*printf("PIPED COMMAND\n");*/ newCommandEntry(&pipeline); }
 			 ;
 
 redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io);}
@@ -66,10 +67,10 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 			 |							 { ; }
 			 ;
 
-command     : executable options 		{ printf("COMMAND\n");  }
+command     : executable options 		{ /*printf("COMMAND\n") */;  }
             ;
 
-executable  : IDENTIFIER	        	{ printf("EXECUTABLE\n"); add($1, &pipeline); }
+executable  : IDENTIFIER	        	{ /*/printf("EXECUTABLE\n"); */ add($1, &pipeline); }
 			| QUOTED_STRING				{ $$ = removeQuotes($1); add($$, &pipeline); }
             ;
 

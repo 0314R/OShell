@@ -14,12 +14,14 @@
 
 #define EXIT_COMMAND 2
 
-pid_t pid;
+pid_t pid, pid1, pid2;
 
 void openInput(char *fileName, int *inAndOutput);
 void openOutput(char *fileName, int *inAndOutput);
 
 int cd(FlexArray *args);
+
 int executeCommand(FlexArray *args, int inAndOutput[2]);
+int executeCommands(Pipeline pl, int inAndOutput[2]);
 
 char *removeQuotes(char *quotedInput);
