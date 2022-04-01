@@ -63,7 +63,11 @@ chain       : pipeline redirections		{
 												free($1);
   												exitWrapper();
 											  }
-										  	  $$ = executeCommands(pl, r, rowLens, io);
+											  if(strcmp($1, "cd") == 0){
+												  cd(pl[0], rowLens[0]);
+											  } else {
+										  	  	$$ = executeCommands(pl, r, rowLens, io);
+											  }
 									  	  }
 										  free($1);
 										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);

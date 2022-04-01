@@ -26,7 +26,30 @@ void resetIo(int *io){
 	io[1] = 1;
 }
 
-int cd(FlexArray *args){
+int cd(char command[20][256], int len){
+	//cd expects exactly one option/argument, namely the path.
+	switch( len - 1){		// The first "argument" in the array is the cd command itself. Therefore -1.
+		case 0: printf("Error: cd requires folder to navigate to!\n"); return 0;
+		case 1: break;
+		default: printf("Error: cd directory not found!\n"); return 0;
+	}
+
+	FlexArray args = staticToFlexArray(command, len);
+
+	char *path = args.arr[1];
+	int status = chdir(path);
+	if(status != 0)
+		printf("Error: cd directory not found!\n");
+	//printf("cd status %d\n", status);
+	// printf("cd to %s\n", path);
+
+	emptyFlexArray(&args);
+	free(args.arr);
+	return status;
+}
+
+
+int cdOld(FlexArray *args){
 	//cd expects exactly one option/argument, namely the path.
 	switch( args->len - 1){		// The first "argument" in the array is the cd command itself. Therefore -1.
 		case 0: printf("Error: cd requires folder to navigate to!\n"); return 0;
