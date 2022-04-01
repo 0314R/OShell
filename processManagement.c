@@ -34,21 +34,22 @@ int cd(FlexArray *args){
 	return status;
 }
 
-int executeCommands(char commands[10][20][256], int r, int *rowLens, int io[2]){
-	printf("EXECUTING COMMANDS\n");
+int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2]){
+	printf("EXECUTING %d COMMANDS\n", nc); //nC = number of Commands
+
 
 	/*
 		First phase: obtain array of FlexArrays, each FlexArray being the argument array for a command.
 	*/
-	FlexArray temp, *argArrays = malloc(r * sizeof(FlexArray));
+	FlexArray temp, *argArrays = malloc(nc * sizeof(FlexArray));
 	assert(argArrays != NULL);
 
-	for(int i=0 ; i<r ; i++){
+	for(int i=0 ; i<nc ; i++){
 		temp = staticToFlexArray(commands[i], rowLens[i]);
 		argArrays[i] = temp;
 	}
 
-	for(int i=0 ; i<r ; i++){
+	for(int i=0 ; i<nc ; i++){
 		printFlexArray(argArrays[i]);
 		emptyFlexArray(&argArrays[i]);
 		free(argArrays[i].arr);
@@ -58,13 +59,32 @@ int executeCommands(char commands[10][20][256], int r, int *rowLens, int io[2]){
 		Second phase: fork and handle children separately
 	*/
 
+	pid_t *pids = malloc(nc * sizeof(pid_t));
+	int *status = malloc(nc * sizeof(int));
+	assert(pids != NULL);
 
+	for(int p=0 ; p<nc ; p++){
+		pids[p] = fork();
 
+		if(pids[p] < 0){
+			printf("Error: failed to fork\n");
+		}
+		else if(pids[p] == 0){
+			printf("I am child %d\n", p);
+			exit(EXIT_SUCCESS);
+		}
+	}
+	for(int p=0 ; p<nc ; p++){
+		waitpid(pids[p], &status[p], 0);
+		printf("child %d returned with status %d\n", p, status[p]);
+	}
+	printf("All children done\n");
 
-
+	free(pids);
+	free(status);
 	free(argArrays);
 
-	return r;
+	return nc;
 }
 
 int executeCommand(FlexArray *args, int io[2])
