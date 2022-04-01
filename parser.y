@@ -57,16 +57,13 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{ if(strcmp($1, "exit") == 0)
-											exitWrapper();
-
-										  /*if(strcmp($1, "cd") == 0)
-											$$ = cd( &(pipeline.argArrays[0]));
-										  else *if(skip == false)
-											$$ = executeCommand( &(pipeline.argArrays[0]), io);
-										  */
+chain       : pipeline redirections		{
+										  if(skip == false){
+											  if(strcmp($1, "exit") == 0)
+  												exitWrapper();
+										  	  $$ = executeCommands(pl, r, rowLens, io);
+									  	  }
 										  free($1);
-										  $$ = executeCommands(pl, r, rowLens, io);
 										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);
 										  //printPipeline();
 										  resetPipeline();
