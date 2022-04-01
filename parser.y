@@ -35,15 +35,23 @@ composition : chain AND					{ if($1 != 0) skip = true; }
 			| chain ';'					{ ; }
 			;
 
-chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0)
+chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0){
+											printf("CASE CD\n");
 											$$ = cd( &(pipeline.argArrays[0]));
+										  }
 										  else if(skip == false)
+										  {
 											//$$ = executeCommand( &(pipeline.argArrays[0]), io);
+											printf("CASE COMMAND\n");
 											$$ = executeCommands( pipeline, io);
+										  } else { //skip == true
+											$$ = 0;	//make sure $$ is initialized
+										  }
 										  free($1);
 
 										  //emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  emptyPipeline(pipeline);
+										  pipeline.len = 0;
 
 										  if($$ == EXIT_COMMAND) exitWrapper();
 

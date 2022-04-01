@@ -174,14 +174,8 @@ int executeCommands(Pipeline pl, int io[2])
 	//now the children have both terminated after their execution, so the following is only run by the parent:
 
 	//first close the fds so that the children don't wait for the parent to write.
-	if(io[0] != 0){
-		printf("closing io[0]\n");
-		close(io[0]);
-	}
-	if(io[1] != 1) {
-		printf("closing io[1]\n");
-		close(io[1]);
-	}
+	if(io[0] != STDIN_FILENO) close(io[0]);
+	if(io[1] != STDOUT_FILENO) close(io[1]);
 	close(pipeFds[0]);
 	close(pipeFds[1]);
 
