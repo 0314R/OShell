@@ -16,6 +16,16 @@ void openOutput(char *fileName, int *io){
 	free(fileName);
 }
 
+void resetIo(int *io){
+	if(io[0] > 1) // not STDIN or STDOUT
+		close(io[0]);
+	if(io[1] > 1)
+		close(io[1]);
+
+	io[0] = 0;
+	io[1] = 1;
+}
+
 int cd(FlexArray *args){
 	//cd expects exactly one option/argument, namely the path.
 	switch( args->len - 1){		// The first "argument" in the array is the cd command itself. Therefore -1.
@@ -78,7 +88,7 @@ void closePipeFds(int **pipes, int np, int callingProcess, int io[2]){
 			close(io[1]);
 	}
 
-	if(np > 0) printf("For process %d, I'm closing all fds but pipes[%d][0] and pipes[%d][1]\n", callingProcess, exceptionIn, exceptionOut);
+	//if(np > 0) printf("For process %d, I'm closing all fds but pipes[%d][0] and pipes[%d][1]\n", callingProcess, exceptionIn, exceptionOut);
 	for(int i=0 ; i < np ; i++){
 		if( (i != exceptionIn) && (pipes[i][0] > 1) )
 			close(pipes[i][0]);
@@ -88,14 +98,14 @@ void closePipeFds(int **pipes, int np, int callingProcess, int io[2]){
 }
 
 int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2]){
-	printf("EXECUTING %d COMMANDS WITH %d PIPES\n", nc, nc-1); //nC = number of Commands
+	//printf("EXECUTING %d COMMANDS WITH %d PIPES\n", nc, nc-1); //nC = number of Commands
 
 	FlexArray argArr;
 
 	int **pipes = initializePipes(nc-1);
 	if(pipes == NULL)
 		return EXIT_FAILURE;
-	printPipes(pipes, nc-1);
+	//printPipes(pipes, nc-1);
 
 	pid_t *pids = malloc(nc * sizeof(pid_t));
 	assert(pids != NULL);
@@ -113,7 +123,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 			//close unused file descriptors
 			closePipeFds(pipes, nc-1, p, io);
 
-			printf("I am child %d\n", p);
+			//printf("I am child %d\n", p);
 
 			// set input file, different for first process
 			if(p == 0){
@@ -167,12 +177,12 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	closePipeFds(pipes, nc-1, -2, io); //-2 because there will be no exceptions in closing the pipes.
 	for(int p=0 ; p<nc ; p++){
 		waitpid(pids[p], &status[p], 0);
-		printf("child %d returned with %d==%d\n", p, status[p], WEXITSTATUS(status[p]));
+		//printf("child %d returned with %d==%d\n", p, status[p], WEXITSTATUS(status[p]));
 		if(status[p] != EXIT_SUCCESS){
 			parentStatus = EXIT_FAILURE;
 		}
 	}
-	printf("All children done\n");
+	//printf("All children done\n");
 
 	freePipes(pipes, nc-1);
 	free(pids);

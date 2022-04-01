@@ -63,17 +63,16 @@ chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
 											$$ = executeCommand( &(pipeline.argArrays[0]), io);
 										  free($1);*/
 										  $$ = executeCommands(pl, r, rowLens, io);
-										  printf("PARENT RETURNED WITH STATUS %d\n", $$);
-										  printPipeline();
+										  //printf("PARENT RETURNED WITH STATUS %d\n", $$);
+										  //printPipeline();
 										  resetPipeline();
 										  /*
 										  emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  if($$ == EXIT_COMMAND) exitWrapper();
-
-										  skip = false;
-										  io[0] = 0;
-										  io[1] = 1;
 										  */
+										  skip = false;
+										  resetIo(io);
+
 									    }
             ;
 
@@ -91,19 +90,19 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 			 |							 { ; }
 			 ;
 
-command     : executable options 		{ printf("COM\n"); }
+command     : executable options 		{ /*printf("COM\n")*/; }
             ;
 
-executable  : IDENTIFIER	        	{ printf("EXE\n"); strcpy(pl[r][c], $1); c++; free($1);/*add($1, &pipeline);*/ }
-| QUOTED_STRING							{ printf("EXE\n"); $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; free($$); /*add($$, &pipeline);*/ }
+executable  : IDENTIFIER	        	{ /*printf("EXE\n")*/; strcpy(pl[r][c], $1); c++; free($1);/*add($1, &pipeline);*/ }
+| QUOTED_STRING							{ /*printf("EXE\n")*/; $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; free($$); /*add($$, &pipeline);*/ }
             ;
 
 options     :           				{ ; }
             | option options			{ ; }
             ;
 
-option      : IDENTIFIER				{ printf("OPT\n"); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline); */free($1); }
-			| QUOTED_STRING				{ printf("OPT\n"); $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline);*/ free($1);}
+option      : IDENTIFIER				{ /*printf("OPT\n");*/ strcpy(pl[r][c], $1); c++; /*add($1, &pipeline); */free($1); }
+			| QUOTED_STRING				{ /*printf("OPT\n");*/ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline);*/ free($1);}
 
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }
