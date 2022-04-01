@@ -18,8 +18,15 @@ pid_t pid;
 
 void openInput(char *fileName, int *inAndOutput);
 void openOutput(char *fileName, int *inAndOutput);
+void resetIo(int *io);
 
 int cd(FlexArray *args);
+
+int **initializePipes(int np);
+void printPipes(int **pipes, int np);
+void freePipes(int **pipes, int np);
+void closePipeFds(int **pipes, int np, int callingProcess, int io[2]);
+
 int executeCommands(char commands[10][20][256], int r, int *rowLens, int io[2]);
 int executeCommand(FlexArray *args, int inAndOutput[2]);
 
