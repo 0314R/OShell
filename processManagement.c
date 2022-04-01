@@ -60,7 +60,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	*/
 
 	pid_t *pids = malloc(nc * sizeof(pid_t));
-	int *status = malloc(nc * sizeof(int));
+	int *status = malloc(nc * sizeof(int)), parentStatus = EXIT_SUCCESS;
 	assert(pids != NULL);
 
 	for(int p=0 ; p<nc ; p++){
@@ -76,7 +76,10 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	}
 	for(int p=0 ; p<nc ; p++){
 		waitpid(pids[p], &status[p], 0);
-		printf("child %d returned with status %d\n", p, status[p]);
+		if(status[p] != EXIT_SUCCESS){
+			printf("child %d returned with ERROR %d\n", p, status[p]);
+			parentStatus = EXIT_FAILURE;
+		}
 	}
 	printf("All children done\n");
 
@@ -84,7 +87,7 @@ int executeCommands(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	free(status);
 	free(argArrays);
 
-	return nc;
+	return parentStatus;
 }
 
 int executeCommand(FlexArray *args, int io[2])

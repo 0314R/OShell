@@ -62,7 +62,8 @@ chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
 										  else *if(skip == false)
 											$$ = executeCommand( &(pipeline.argArrays[0]), io);
 										  free($1);*/
-										  executeCommands(pl, r, rowLens, io);
+										  $$ = executeCommands(pl, r, rowLens, io);
+										  printf("PARENT RETURNED WITH STATUS %d\n", $$);
 										  printPipeline();
 										  resetPipeline();
 										  /*
