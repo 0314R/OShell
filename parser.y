@@ -51,8 +51,12 @@ chain       : pipeline redirections		{ if(strcmp($1, "cd") == 0){
 
 										  //emptyFlexArray( &(pipeline.argArrays[0]) ) ; // Clean array of arguments for next command.
 										  emptyPipeline(pipeline);
-										  pipeline.len = 0;
-
+										  /* for(int i=0 ; i<pipeline.len ; i++){
+											  free(pipeline.argArrays[i]);
+										  } */
+										  pipeline.len = 1;
+										  //newCommandEntry(&pipeline);
+										  /* $$ = 100; */
 										  if($$ == EXIT_COMMAND) exitWrapper();
 
 										  skip = false;

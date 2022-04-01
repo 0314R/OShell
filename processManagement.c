@@ -187,7 +187,7 @@ int executeCommands(Pipeline pl, int io[2])
 	waitpid(pid2, &status2, 0);
 	printf("child 2 exited with status %d\n", status2);
 
-	return WEXITSTATUS(status);
+	return WEXITSTATUS(status2);
 }
 
 char *removeQuotes(char *quotedInput){
