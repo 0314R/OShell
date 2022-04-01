@@ -34,6 +34,18 @@ int cd(FlexArray *args){
 	return status;
 }
 
+int executeCommandsStatic(char commands[10][20][256], int r, int *rowLens){
+	printf("EXECUTING COMMANDS\n");
+	FlexArray fa = staticToFlexArray(commands[0], rowLens[0]);
+	printFlexArray(fa);
+	emptyFlexArray(&fa);
+	free(fa.arr);
+	// for(int i=0 ; i<r ; i++){
+	// 	staticToFlexArray
+	// }
+	return r;
+}
+
 int executeCommand(FlexArray *args, int io[2])
 {
 	int fdIn=io[0], fdOut = io[1], status, dupIn, dupOut;
@@ -56,7 +68,7 @@ int executeCommand(FlexArray *args, int io[2])
 	}
 	else
 	{									// Child: actually execute the executable.
-		addToFlexArray(NULL, args);				// The last "argument" should be NULL for execvp to work
+		add(NULL, args);				// The last "argument" should be NULL for execvp to work
 
 
 		dupIn = dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file

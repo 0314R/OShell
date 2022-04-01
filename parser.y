@@ -62,7 +62,7 @@ chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
 										  else if(skip == false)
 											$$ = executeCommand( &(pipeline.argArrays[0]), io);
 										  free($1);*/
-
+										  executeCommandsStatic(pl, r, rowLens);
 										  printPipeline();
 										  resetPipeline();
 										  /*
@@ -77,7 +77,7 @@ chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
             ;
 
 pipeline 	: pipedCommand pipeline		{ ; }
-| command								{ rowLens[r] = c; r++; c=0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
+			| command					{ rowLens[r] = c; r++; c=0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
             ;
 
 pipedCommand : command SINGLEOR			 { rowLens[r] = c; r++;  c = 0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }

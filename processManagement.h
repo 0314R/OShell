@@ -20,6 +20,7 @@ void openInput(char *fileName, int *inAndOutput);
 void openOutput(char *fileName, int *inAndOutput);
 
 int cd(FlexArray *args);
+int executeCommandsStatic(char commands[10][20][256], int r, int *rowLens);
 int executeCommand(FlexArray *args, int inAndOutput[2]);
 
 char *removeQuotes(char *quotedInput);

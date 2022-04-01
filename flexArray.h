@@ -16,14 +16,16 @@ typedef struct Pipeline{
 
 FlexArray newFlexArray();
 
+FlexArray staticToFlexArray(char matrixRow[20][256], int len);
+
 Pipeline newPipeline();
 
 void newCommandEntry(Pipeline *pl);
 
 void flex(FlexArray *fa);
 
-void add(char *input, Pipeline *pl);
-void addToFlexArray(char *input, FlexArray *fa);
+void addToPipeline(char *input, Pipeline *pl);
+void add(char *input, FlexArray *fa);
 
 void printFlexArray(FlexArray fa);
 

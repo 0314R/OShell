@@ -13,6 +13,16 @@ FlexArray newFlexArray(){
 	return fa;
 }
 
+FlexArray staticToFlexArray(char matrixRow[20][256], int len){
+	FlexArray fa = newFlexArray();
+
+	for(int i=0 ; i<len ; i++){
+		add(matrixRow[i], &fa);
+	}
+
+	return fa;
+}
+
 Pipeline newPipeline(){
 	Pipeline pl;
 	int max_len = 10;		// arbitrarily assuming we will not get pipelines of length >10
@@ -46,12 +56,12 @@ void flex(FlexArray *fa){
 	fa->max_len = new_len;
 }
 
-void add(char *input, Pipeline *pl){
+void addToPipeline(char *input, Pipeline *pl){
 	//printf("trying to add to flexArray number %d\n", pl->len-1);
-	addToFlexArray(input, &(pl->argArrays[pl->len-1]) );
+	add(input, &(pl->argArrays[pl->len-1]) );
 }
 
-void addToFlexArray(char *input, FlexArray *fa){
+void add(char *input, FlexArray *fa){
 	if(fa->len == fa->max_len)
 		flex(fa);			// to flex <=> to double size of array
 
@@ -77,11 +87,11 @@ void printFlexArray(FlexArray fa){
 			printf("NULL, ");
 	}
 
-	// Now print the last string, which should be a NULL but if/else just in case.
 	if(fa.arr[i] != NULL)
 		printf("\"%s\"}", fa.arr[i]);
 	else
 		printf("NULL}");
+	putchar('\n');
 }
 
 void emptyFlexArray(FlexArray *fa){
