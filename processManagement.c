@@ -83,7 +83,7 @@ int executeCommand(FlexArray *args, int io[2])
 
 int executeCommands(Pipeline pl, int io[2])
 {
-	int fdIn, fdOut, status, dupIn, dupOut, pipeFds[2];
+	int fdIn, fdOut, status, status1, status2, dupIn, dupOut, pipeFds[2];
 	// char *executable = args->arr[0];
 	FlexArray *args1 = & (pl.argArrays[0]);
 	FlexArray *args2 = & (pl.argArrays[1]);
@@ -91,7 +91,6 @@ int executeCommands(Pipeline pl, int io[2])
 	char *executable2 = args2->arr[0];
 	//printf("fdIn = %d, fdOut = %d\n", io[0], io[1]);
 	printf("exec1 %s\nexec2 %s\n", executable1, executable2);
-	return 0;
 
 	if(io[0] == -1 || io[1] == -1)
 		return EXIT_FAILURE;
@@ -104,18 +103,17 @@ int executeCommands(Pipeline pl, int io[2])
 	pid1 = fork();
 	if(pid1 < 0)
 		fprintf(stderr, "fork fail\n");
-	else if( pid1 > 0)
-		wait(&status);	// Parent waits until child terminates. Return value 0 if success
-		//free(executable);				// The executable needs to be freed too.
-	else
+	else if( pid1 == 0)
 	{									// Child: actually execute the executable.
-		addToFlexArray(NULL, args1);				// The last "argument" should be NULL for execvp to work
-		fdIn = io[0];
-		fdOut = pipeFds[1];
-
 		//close the fds that are not used by this child.
 		close(io[1]);
 		close(pipeFds[0]);
+
+		addToFlexArray(NULL, args1);				// The last "argument" should be NULL for execvp to work
+
+		fdIn = io[0];
+		fdOut = pipeFds[1];
+		//printf("process 1, fdIn=io[0]=%d, fdOut=pipeFds[1]=%d\n", fdIn, fdOut);
 
 		dupIn = dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
 		if(dupIn < 0)
@@ -125,8 +123,8 @@ int executeCommands(Pipeline pl, int io[2])
 	        printf("Error opening the output file\n");
 
 		//these fds are not needed anymore after dup2.
-		close(fdIn);
-		close(fdOut);
+		if(fdIn != STDIN_FILENO) close(fdIn);
+		if(fdOut != STDOUT_FILENO) close(fdOut);
 
 		if( strcmp(executable1, "exit") == 0){
 			exit(EXIT_COMMAND);					// Special exit value
@@ -137,6 +135,64 @@ int executeCommands(Pipeline pl, int io[2])
 		}
 
 	}
+
+	pid2 = fork();
+	if(pid2 < 0)
+		fprintf(stderr, "fork fail\n");
+	else if( pid2 == 0)
+	{									// Child: actually execute the executable.
+		//close the fds that are not used by this child.
+		close(pipeFds[1]);
+		close(io[0]);
+
+		addToFlexArray(NULL, args2);				// The last "argument" should be NULL for execvp to work
+
+		fdIn = pipeFds[0];
+		fdOut = io[1];
+		printf("process 2, fdIn=pipeFds[0]=%d, fdOut=io[1]=%d\n", fdIn, fdOut);
+
+		dupIn = dup2(fdIn, STDIN_FILENO);		// Replace standard input by specified input file
+		if(dupIn < 0)
+	        printf("Error opening the input file\n");
+		dupOut = dup2(fdOut, STDOUT_FILENO);
+		if(dupOut < 0)
+	        printf("Error opening the output file\n");
+
+		//these fds are not needed anymore after dup2.
+		if(fdIn != STDIN_FILENO) close(fdIn);
+		if(fdOut != STDOUT_FILENO) close(fdOut);
+
+		if( strcmp(executable2, "exit") == 0){
+			exit(EXIT_COMMAND);					// Special exit value
+		}
+		else if( execvp(executable2, args2->arr) == -1){
+			printf("Error: command not found!\n");
+			exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
+		}
+
+	}
+	//now the children have both terminated after their execution, so the following is only run by the parent:
+
+	//first close the fds so that the children don't wait for the parent to write.
+	if(io[0] != 0){
+		printf("closing io[0]\n");
+		close(io[0]);
+	}
+	if(io[1] != 1) {
+		printf("closing io[1]\n");
+		close(io[1]);
+	}
+	close(pipeFds[0]);
+	close(pipeFds[1]);
+
+	printf("parent waiting for child 1 and 2\n");
+	waitpid(pid1, &status1, 0);
+	printf("child 1 exited with status %d\n", status1);
+
+	printf("parent waiting for child 2 only\n");
+	waitpid(pid2, &status2, 0);
+	printf("child 2 exited with status %d\n", status2);
+
 	return WEXITSTATUS(status);
 }
 
