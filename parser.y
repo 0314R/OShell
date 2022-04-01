@@ -76,8 +76,12 @@ chain       : pipeline redirections		{ /*if(strcmp($1, "cd") == 0)
 									    }
             ;
 
-pipeline    : command					{ rowLens[r] = c; r++;  c = 0; printf("finished reading command, [%d,%d]\n", r, c); }
+pipeline 	: pipedCommand pipeline		{ ; }
+| command								{ rowLens[r] = c; r++; c=0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
             ;
+
+pipedCommand : command SINGLEOR			 { rowLens[r] = c; r++;  c = 0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
+			 ;
 
 redirections : '<' fileName '>' fileName { ; }//openInput($2, io); openOutput($4, io);}
 			 | '>' fileName '<' fileName { ; }//openOutput($2, io); openInput($4, io); }
@@ -86,19 +90,19 @@ redirections : '<' fileName '>' fileName { ; }//openInput($2, io); openOutput($4
 			 |							 { ; }
 			 ;
 
-command     : executable options 		{ ; }
+command     : executable options 		{ printf("COM\n"); }
             ;
 
-executable  : IDENTIFIER	        	{ strcpy(pl[r][c], $1); c++; free($1);/*add($1, &pipeline);*/ }
-| QUOTED_STRING							{ $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; /*add($$, &pipeline);*/ }
+executable  : IDENTIFIER	        	{ printf("EXE\n"); strcpy(pl[r][c], $1); c++; free($1);/*add($1, &pipeline);*/ }
+| QUOTED_STRING							{ printf("EXE\n"); $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; free($$); /*add($$, &pipeline);*/ }
             ;
 
 options     :           				{ ; }
             | option options			{ ; }
             ;
 
-option      : IDENTIFIER				{ strcpy(pl[r][c], $1); c++; /*add($1, &pipeline); */free($1); }
-			| QUOTED_STRING				{ $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline);*/ free($1);}
+option      : IDENTIFIER				{ printf("OPT\n"); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline); */free($1); }
+			| QUOTED_STRING				{ printf("OPT\n"); $1 = removeQuotes($1); strcpy(pl[r][c], $1); c++; /*add($1, &pipeline);*/ free($1);}
 
 fileName    : IDENTIFIER				{ $$ = $1; }
 			| QUOTED_STRING				{ $1 = removeQuotes($1); $$ = $1; }
