@@ -1,17 +1,17 @@
 #include "processManagement.h"
 
-void printBgPids(){
-	printf("BgPids:\n");
-	for(int i=0 ; i<10 ; i++){
+void removePid(pid_t pid){
+	for(int i=0 ; i<10; i++){
 		for(int j=0 ; j<10 ; j++){
-			printf("%d ", bgPlPids[i][j]);
+			if(bgPlPids[i][j] == pid){
+				bgPlPids[i][j] = 0;
+				return;
+			}
 		}
-		putchar('\n');
 	}
-	putchar('\n');
 }
 
-int activeBackgroundProcesses(){
+int anyActiveBackgroundProcesses(){
 	for(int i=0 ; i<10 ; i++){
 		for(int j=0 ; j<10 ; j++){
 			if( bgPlPids[i][j] != 0)
@@ -19,6 +19,38 @@ int activeBackgroundProcesses(){
 		}
 	}
 	return 0;
+}
+
+void handle_sigchld(int sig, siginfo_t *si, void *idk){
+	removePid(si->si_pid);
+	while(waitpid(-1, 0, WNOHANG) > 0);
+}
+
+void handle_sigusr1(int sig){
+	printf("not yet implemented\n");
+}
+
+void handle_sigint(int sig){
+	if( anyActiveBackgroundProcesses() ){
+		printf("Error: there are still background processes running!\n");
+	} else {
+		exit(EXIT_SUCCESS);
+	}
+}
+
+void installHandlers(){
+	struct sigaction ch = {0};
+	struct sigaction jobs = {0};
+	struct sigaction interrupt = {0};
+	ch.sa_sigaction = &handle_sigchld;
+	jobs.sa_handler = &handle_sigusr1;
+	interrupt.sa_handler = &handle_sigint;
+	ch.sa_flags = SA_RESTART;
+	jobs.sa_flags = SA_RESTART;
+	interrupt.sa_flags = SA_RESTART | SA_NOCLDSTOP;;
+	sigaction(SIGCHLD, &ch, NULL);
+	sigaction(SIGUSR1, &jobs, NULL);
+	sigaction(SIGINT, &interrupt, NULL);
 }
 
 void openInput(char *fileName, int *io){
@@ -81,12 +113,6 @@ int **initializePipes(int np){
 	}
 
 	return pipes;
-}
-
-void printPipes(int **pipes, int np){
-	for(int i=0 ; i<np ; i++){
-		printf("Pipe %d: [%d,%d]\n", i, pipes[i][0], pipes[i][1]);
-	}
 }
 
 void freePipes(int **pipes, int np){
@@ -209,126 +235,6 @@ int executePipeline(char commands[10][20][256], int nc, int *rowLens, int io[2])
 	return parentStatus;
 }
 
-void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens, int io[2]){
-	//printf("executing %s(%s) in the bg\n", commands[0][0], commands[0][1]);
-	FlexArray argArr;
-
-	pid_t *pids = malloc(nc * sizeof(pid_t));
-	assert(pids != NULL);
-
-	for(int p=0 ; p<nc ; p++){
-		pids[p] = fork();
-
-		if(pids[p] < 0){
-			printf("Error: failed to fork\n");
-			exit(EXIT_FAILURE);
-		}
-		else if(pids[p] == 0){
-			// for the first process: set input file if it is not the inherited STDIN. Else close STDIN.
-			if( p==0 && (io[0] != STDIN_FILENO) ){
-
-				if( dup2(io[0], STDIN_FILENO) < 0 ){
-					printf("Error with dup2 io[0]\n");
-					exit(EXIT_FAILURE);
-				}
-			} else {
-				close(STDIN_FILENO);
-			}
-			close(io[0]);
-
-			// for the last process: set the output file if it is not the inherited STDOUT.
-			if( io[1] != STDOUT_FILENO ){
-				if( (p==nc-1) && dup2(io[1], STDOUT_FILENO) < 0 ){
-					printf("Error with dup2 io[1]\n");
-					exit(EXIT_FAILURE);
-				}
-				close(io[1]);
-			}
-
-			// Obtain arguments relevant for this process.
-			argArr = staticToFlexArray(commands[p], rowLens[p]);
-			// Execute the command corresponding to this process.
-			if( execvp(argArr.arr[0], argArr.arr) == -1){
-				printf("Error: command not found!\n");
-				emptyFlexArray(&argArr);
-				free(argArr.arr);
-				exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
-			}
-
-			//I don't think this code is ever actually executed...
-			//...
-			//...
-			emptyFlexArray(&argArr);
-			free(argArr.arr);
-
-			exit(EXIT_SUCCESS);
-		}
-	}
-
-
-	// Only the parent process can get here.
-	free(pids);
-}
-
-void executeBackgroundCommand(char command[20][256], int len, int io[2]){
-	FlexArray argArr;
-
-	pid_t pid;
-
-	pid = fork();
-
-	if(pid < 0){
-		printf("Error: failed to fork\n");
-		exit(EXIT_FAILURE);
-	}
-	else if(pid == 0){
-		// Set input file if it is not the inherited STDIN. Else close STDIN.
-		if( io[0] != STDIN_FILENO ){
-
-			if( dup2(io[0], STDIN_FILENO) < 0 ){
-				printf("Error with dup2 io[0]\n");
-				exit(EXIT_FAILURE);
-			}
-		} else {
-			close(STDIN_FILENO);
-		}
-		close(io[0]);
-
-		// Set the output file if it is not the inherited STDOUT.
-		if( io[1] != STDOUT_FILENO ){
-			if( dup2(io[1], STDOUT_FILENO) < 0 ){
-				printf("Error with dup2 io[1]\n");
-				exit(EXIT_FAILURE);
-			}
-			close(io[1]);
-		}
-
-		// If the command is jobs, just send a special signal to the parent process.
-		if( strcmp(command[0], "jobs") == 0){
-			kill(getppid(), SIGUSR1);
-			exit(EXIT_SUCCESS);
-		}
-
-		// Obtain arguments relevant for this process.
-		argArr = staticToFlexArray(command, len);
-		// Execute the command corresponding to this process.
-		if( execvp(argArr.arr[0], argArr.arr) == -1){
-			printf("Error: command not found!\n");
-			emptyFlexArray(&argArr);
-			free(argArr.arr);
-			exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
-		}
-
-		//I don't think this code is ever actually executed...
-		//...
-		//...
-		emptyFlexArray(&argArr);
-		free(argArr.arr);
-
-		exit(EXIT_SUCCESS);
-	}
-}
-
 void startBackgroundCommand(char command[20][256], int len, int io[2]){
 	FlexArray argArr;
 
@@ -368,82 +274,9 @@ void startBackgroundCommand(char command[20][256], int len, int io[2]){
 		free(argArr.arr);
 		exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
 	}
-
-	//I don't think this code is ever actually executed...
-	//...
-	//...
-	emptyFlexArray(&argArr);
-	free(argArr.arr);
-
-	exit(EXIT_SUCCESS);
-}
-
-// void executeBackgroundFirst(char commands[10][20][256], int nc, int *rowLens, int io[2]){
-// 	struct sigaction ch = {0};
-// 	ch.sa_handler = &handle_sigchld;
-// 	ch.sa_flags = SA_RESTART;
-// 	sigaction(SIGCHLD, &ch, NULL);
-//
-// 	executeBackgroundCommand(commands[0], rowLens[0], io);
-// }
-
-void removePid(pid_t pid){
-	for(int i=0 ; i<10; i++){
-		for(int j=0 ; j<10 ; j++){
-			if(bgPlPids[i][j] == pid){
-				bgPlPids[i][j] = 0;
-				return;
-			}
-		}
-	}
-	//printf("Error: couldn't find pid in matrix!\n");
-}
-
-void handle_sigchld(int sig, siginfo_t *si, void *idk){
-	//printf("process %d finished\n", si->si_pid);
-	removePid(si->si_pid);
-	while(waitpid(-1, 0, WNOHANG) > 0);
-}
-
-void handle_sigusr1(int sig){
-	printf("not yet implemented\n");
-}
-
-// void exitWrapper(){
-// 	if( activeBackgroundProcesses() ){
-// 		printf("Error: there are still background processes running!\n");
-// 	} else {
-// 		while(waitpid(-1, 0, WNOHANG) > 0);
-// 	}
-// }
-
-void handle_sigint(int sig){
-	//printf("RECEIVED SIGINT\n");
-	if( activeBackgroundProcesses() ){
-		printf("Error: there are still background processes running!\n");
-	} else {
-		exit(EXIT_SUCCESS);
-	}
-}
-
-void installHandlers(){
-	struct sigaction ch = {0};
-	struct sigaction jobs = {0};
-	struct sigaction interrupt = {0};
-	ch.sa_sigaction = &handle_sigchld;
-	jobs.sa_handler = &handle_sigusr1;
-	interrupt.sa_handler = &handle_sigint;
-	ch.sa_flags = SA_RESTART;
-	jobs.sa_flags = SA_RESTART;
-	interrupt.sa_flags = SA_RESTART | SA_NOCLDSTOP;;
-	sigaction(SIGCHLD, &ch, NULL);
-	sigaction(SIGUSR1, &jobs, NULL);
-	sigaction(SIGINT, &interrupt, NULL);
 }
 
 void executeBackground(char commands[10][20][256], int nc, int *rowLens, int io[2], int bgPlId){
-	installHandlers();
-
 	pid_t pid;
 
 	for(int p=0 ; p<nc ; p++){

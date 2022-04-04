@@ -8,7 +8,7 @@ int yylex_destroy();
 
 char pl[10][20][256]; //this static array will contain all the args of all commands of the current pipeline.
 int rowLens[10];	  //this goes together with the above: says how long each row is, i.e. how many args per command.
-int r, c, nOfBgPls = 0; //rows, columns of the current pipeline ; number of background pipelines so far.
+int r, c, bgPlId = 0; //rows, columns of the current pipeline ; number of background pipelines so far.
 int skip = false;
 int bg = false;
 int io[2] = {0,1};
@@ -20,38 +20,20 @@ void resetPipeline(){
 	r = c = 0;
 }
 
-void printPipeline(){
-	printf("PIPELINE:\n");
-	for(int i=0 ; i<r ; i++){
-		printf("[%d] ", rowLens[i]);
-		for(int j=0 ; j<rowLens[i] ; j++){
-			printf("%s ", pl[i][j]);
-		}
-		putchar('\n');
-	}
-	putchar('\n');
-}
-
-/* void exitWrapper(){
-	yylex_destroy();
-	exit(EXIT_SUCCESS);
-} */
-
 int executeChain(){
 	int status;
 	char *value = pl[0][0]; //the first executable, which might be a builtin command
 
 	if(skip == false){
 		if(strcmp(value, "exit") == 0){
-		  raise(SIGINT); //exitWrapper();
+		  raise(SIGINT);
 		}
 		else if(strcmp(value, "cd") == 0)
 			status = cd(pl[0], rowLens[0]);
 		else{
 			if(bg){
-				executeBackground(pl, r, rowLens, io, nOfBgPls);
-				nOfBgPls = (nOfBgPls + 1) % 10;
-				//executeBackgroundCommand(pl[0], rowLens[0], io);
+				executeBackground(pl, r, rowLens, io, bgPlId);
+				bgPlId = (bgPlId + 1) % 10;			// Loop over the 10 spots corresponding to the 10 last background pipelines
 				status = EXIT_SUCCESS;
 			}
 			else{
@@ -64,7 +46,7 @@ int executeChain(){
 
 	skip = false;
 	bg = false;
-	resetIo(io);
+	resetIo(io); //reset the file descriptors
 
 	return status;
 }
