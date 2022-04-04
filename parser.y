@@ -10,6 +10,7 @@ char pl[10][20][256]; //this static array will contain all the args of all comma
 int rowLens[10];	  //this goes together with the above: says how long each row is, i.e. how many args per command.
 int r, c;
 int skip = false;
+int bg = false;
 int io[2] = {0,1};
 
 void resetPipeline(){
@@ -46,13 +47,22 @@ int executeChain(char *value){
 		}
 		if(strcmp(value, "cd") == 0)
 			status = cd(pl[0], rowLens[0]);
-		else
-			status = executePipeline(pl, r, rowLens, io);
+		else{
+			if(bg){
+				executeBackgroundPipeline(pl, r, rowLens, io);
+				status = EXIT_SUCCESS;
+			}
+			else{
+				status = executePipeline(pl, r, rowLens, io);
+			}
+		}
+
 	}
 	free(value);
 	resetPipeline();
 
 	skip = false;
+	bg = false;
 	resetIo(io);
 
 	return status;
@@ -73,7 +83,7 @@ inputline   : composition inputline		{ ; }
 
 composition : chain AND					{ if(executeChain($1) != 0) skip = true; }
 			| chain OR					{ if(executeChain($1) == 0) skip = true; }
-			| chain SINGLEAND			{ $$ = executeChain($1); }
+			| chain SINGLEAND			{ bg = true; $$ = executeChain($1); }
 			| chain EOL					{ $$ = executeChain($1); }
 			| chain ';'					{ $$ = executeChain($1); }
 			;
