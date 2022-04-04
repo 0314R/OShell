@@ -49,8 +49,8 @@ int executeChain(char *value){
 			status = cd(pl[0], rowLens[0]);
 		else{
 			if(bg){
-				//executeBackgroundPipeline(pl, r, rowLens, io);
-				executeBackgroundCommand(pl[0], rowLens[0], io);
+				executeBackground(pl, r, rowLens, io);
+				//executeBackgroundCommand(pl[0], rowLens[0], io);
 				status = EXIT_SUCCESS;
 			}
 			else{
@@ -85,6 +85,7 @@ inputline   : composition inputline		{ ; }
 composition : chain AND					{ if(executeChain($1) != 0) skip = true; }
 			| chain OR					{ if(executeChain($1) == 0) skip = true; }
 			| chain SINGLEAND			{ bg = true; $$ = executeChain($1); }
+			| chain SINGLEAND EOL		{ bg = true; $$ = executeChain($1); }
 			| chain EOL					{ $$ = executeChain($1); }
 			| chain ';'					{ $$ = executeChain($1); }
 			;

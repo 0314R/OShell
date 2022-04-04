@@ -250,7 +250,6 @@ void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens,
 }
 
 void executeBackgroundCommand(char command[20][256], int len, int io[2]){
-	//printf("executing %s(%s) in the bg\n", commands[0][0], commands[0][1]);
 	FlexArray argArr;
 
 	pid_t pid;
@@ -303,6 +302,18 @@ void executeBackgroundCommand(char command[20][256], int len, int io[2]){
 	}
 }
 
+void handle_sigchld(int sig){
+	printf("child finished\n");
+}
+
+void executeBackground(char commands[10][20][256], int nc, int *rowLens, int io[2]){
+	struct sigaction ch = {0};
+	ch.sa_handler = &handle_sigchld;
+	ch.sa_flags = SA_RESTART;
+	sigaction(SIGCHLD, &ch, NULL);
+
+	executeBackgroundCommand(commands[0], rowLens[0], io);
+}
 
 char *removeQuotes(char *quotedInput){
 	char *output;
