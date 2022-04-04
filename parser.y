@@ -1,6 +1,7 @@
 
 %{
 #include "processManagement.h"
+#include "colors.h"
 
 int yylex(void);
 int yyerror(char* s);
@@ -19,13 +20,53 @@ void exitWrapper(){
 %}
 
 %union {int num; char *id; }
-%token <id> IDENTIFIER QUOTED_STRING
-%token OR AND SINGLEOR SINGLEAND EOL CD
+%token <id> IDENTIFIER QUOTED_STRING SCRIPT
+%token OR AND SINGLEOR SINGLEAND EOL CD RED RESET YELLOW LIGHTBLUE LIGHTCYAN
+GREEN BROWN BLUE PURPLE CYAN BLACK GREY WHITE LIGHTRED LIGHTGREY LIGHTGREEN LIGHTPURPLE
 %type <id> executable options option fileName path
 %type <num> chain
 
 %%
 inputline   : composition inputline		{ ; }
+			| SCRIPT 		 			{ char cmd[100] = "bash ./";
+										  strcat(cmd, $1);
+										  system(cmd); 
+										}
+			  EOL inputline
+			| RED 						{ red(); }
+			  EOL inputline	
+			| BROWN						{ brown(); }
+			  EOL inputline	
+			| YELLOW 					{ yellow(); }
+			  EOL inputline	
+			| GREEN 					{ green(); }
+			  EOL inputline	
+			| BLUE	 					{ blue(); }
+			  EOL inputline	
+			| PURPLE 					{ purple(); }
+			  EOL inputline	
+			| CYAN	 					{ cyan(); }
+			  EOL inputline	
+			| BLACK 					{ black(); }
+			  EOL inputline	
+			| GREY	 					{ grey(); }
+			  EOL inputline	
+			| WHITE 					{ white(); }
+			  EOL inputline	
+			| LIGHTRED 					{ lightred(); }
+			  EOL inputline	
+			| LIGHTGREY					{ lightgrey(); }
+			  EOL inputline	
+			| LIGHTGREEN				{ lightgreen(); }
+			  EOL inputline	
+			| LIGHTBLUE					{ lightblue(); }
+			  EOL inputline	
+			| LIGHTPURPLE				{ lightpurple(); }
+			  EOL inputline	
+			| LIGHTCYAN					{ lightcyan(); }
+			  EOL inputline	
+			| RESET 					{ reset(); }
+			  EOL inputline
 			|
             ;
 
@@ -55,9 +96,9 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 			 |							 { ; }
 			 ;
 
-command     : CD path		 			{ if ($2 == NULL) {chdir(getenv("HOME"));} 
+command     : CD path		 			{ if ($2 == NULL) { printf("Error: cd requires folder to navigate to!\n"); } //{chdir(getenv("HOME"));} 
 										  else { 
-											if(chdir($2) != 0) {printf("No such file or directory\n"); } 
+											if(chdir($2) != 0) {printf("Error: cd directory not found!\n"); } 
 											else { free($2);} } }
             | executable options 		{ ; }
 			;

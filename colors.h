@@ -1,0 +1,20 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void red();
+void brown();
+void yellow();
+void green();
+void blue();
+void purple();
+void cyan();
+void black();
+void grey();
+void white();
+void lightgrey();
+void lightred();
+void lightgreen();
+void lightblue();
+void lightpurple();
+void lightcyan();
+void reset();
