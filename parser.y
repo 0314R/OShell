@@ -32,20 +32,20 @@ void printPipeline(){
 	putchar('\n');
 }
 
-void exitWrapper(){
+/* void exitWrapper(){
 	yylex_destroy();
 	exit(EXIT_SUCCESS);
-}
+} */
 
-int executeChain(char *value){
+int executeChain(){
 	int status;
+	char *value = pl[0][0]; //the first executable, which might be a builtin command
 
 	if(skip == false){
 		if(strcmp(value, "exit") == 0){
-		  free(value);
-		  exitWrapper();
+		  raise(SIGINT); //exitWrapper();
 		}
-		if(strcmp(value, "cd") == 0)
+		else if(strcmp(value, "cd") == 0)
 			status = cd(pl[0], rowLens[0]);
 		else{
 			if(bg){
@@ -60,7 +60,6 @@ int executeChain(char *value){
 		}
 
 	}
-	free(value);
 	resetPipeline();
 
 	skip = false;
@@ -75,7 +74,7 @@ int executeChain(char *value){
 %union {int num; char *id; }
 %token <id> IDENTIFIER QUOTED_STRING
 %token OR AND SINGLEOR SINGLEAND EOL
-%type <id> executable options option fileName pipeline chain
+%type <id> executable options option fileName pipeline pipedCommand
 %type <num> composition
 
 %%
@@ -83,18 +82,18 @@ inputline   : composition inputline		{ ; }
 			|
             ;
 
-composition : chain AND					{ if(executeChain($1) != 0) skip = true; }
-			| chain OR					{ if(executeChain($1) == 0) skip = true; }
-			| chain SINGLEAND			{ bg = true; $$ = executeChain($1); }
-			| chain SINGLEAND EOL		{ bg = true; $$ = executeChain($1); }
-			| chain EOL					{ $$ = executeChain($1); }
-			| chain ';'					{ $$ = executeChain($1); }
+composition : chain AND					{ if(executeChain() != 0) skip = true; }
+			| chain OR					{ if(executeChain() == 0) skip = true; }
+			| chain SINGLEAND			{ bg = true; $$ = executeChain(); }
+			| chain SINGLEAND EOL		{ bg = true; $$ = executeChain(); }
+			| chain EOL					{ $$ = executeChain(); }
+			| chain ';'					{ $$ = executeChain(); }
 			;
 
 chain       : pipeline redirections		{ ; }
             ;
 
-pipeline 	: pipedCommand pipeline		{ free($2); }
+pipeline 	: pipedCommand pipeline		{ ; }
 			| command					{ rowLens[r] = c; r++; c=0; /*printf("finished reading command, [%d,%d, %d]\n", r, c, rowLens[r-1]);*/ }
             ;
 
@@ -119,8 +118,8 @@ redirections : '<' fileName '>' fileName { openInput($2, io); openOutput($4, io)
 command     : executable options 		{ ; }
             ;
 
-executable  : IDENTIFIER	        	{ strcpy(pl[r][c], $1); c++; }
-			| QUOTED_STRING				{ $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; }
+executable  : IDENTIFIER	        	{ strcpy(pl[r][c], $1); c++; free($1); }
+			| QUOTED_STRING				{ $$ = removeQuotes($1); strcpy(pl[r][c], $$); c++; free($$); }
             ;
 
 options     :           				{ ; }

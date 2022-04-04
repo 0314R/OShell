@@ -29,6 +29,8 @@ void resetIo(int *io);
 
 int cd(char command[20][256], int len);
 
+void exitWrapper();
+
 int executePipeline(char commands[10][20][256], int r, int *rowLens, int io[2]);
 void executeBackgroundPipeline(char commands[10][20][256], int r, int *rowLens, int io[2]);
 void executeBackgroundCommand(char command[20][256], int len, int io[2]);

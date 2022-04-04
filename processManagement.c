@@ -400,31 +400,45 @@ void removePid(pid_t pid){
 }
 
 void handle_sigchld(int sig, siginfo_t *si, void *idk){
+	//printf("process %d finished\n", si->si_pid);
 	removePid(si->si_pid);
+	while(waitpid(-1, 0, WNOHANG) > 0);
 }
 
 void handle_sigusr1(int sig){
 	printf("not yet implemented\n");
 }
 
+// void exitWrapper(){
+// 	if( activeBackgroundProcesses() ){
+// 		printf("Error: there are still background processes running!\n");
+// 	} else {
+// 		while(waitpid(-1, 0, WNOHANG) > 0);
+// 	}
+// }
+
 void handle_sigint(int sig){
-	printf("got SIGINT\n");
+	//printf("RECEIVED SIGINT\n");
 	if( activeBackgroundProcesses() ){
 		printf("Error: there are still background processes running!\n");
 	} else {
-
+		exit(EXIT_SUCCESS);
 	}
 }
 
 void installHandlers(){
 	struct sigaction ch = {0};
 	struct sigaction jobs = {0};
+	struct sigaction interrupt = {0};
 	ch.sa_sigaction = &handle_sigchld;
 	jobs.sa_handler = &handle_sigusr1;
+	interrupt.sa_handler = &handle_sigint;
 	ch.sa_flags = SA_RESTART;
 	jobs.sa_flags = SA_RESTART;
+	interrupt.sa_flags = SA_RESTART | SA_NOCLDSTOP;;
 	sigaction(SIGCHLD, &ch, NULL);
 	sigaction(SIGUSR1, &jobs, NULL);
+	sigaction(SIGINT, &interrupt, NULL);
 }
 
 void executeBackground(char commands[10][20][256], int nc, int *rowLens, int io[2], int bgPlId){
