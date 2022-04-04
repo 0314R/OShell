@@ -189,16 +189,11 @@ int executePipeline(char commands[10][20][256], int nc, int *rowLens, int io[2])
 }
 
 void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens, int io[2]){
+	printf("executing %s(%s) in the bg\n", commands[0][0], commands[0][1]);
 	FlexArray argArr;
-
-	int **pipes = initializePipes(nc-1);
-	if(pipes == NULL)
-		return;
 
 	pid_t *pids = malloc(nc * sizeof(pid_t));
 	assert(pids != NULL);
-	int *status = malloc(nc * sizeof(int)), parentStatus = EXIT_SUCCESS;
-	assert(status != NULL);
 
 	for(int p=0 ; p<nc ; p++){
 		pids[p] = fork();
@@ -208,41 +203,28 @@ void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens,
 			exit(EXIT_FAILURE);
 		}
 		else if(pids[p] == 0){
-			//close unused file descriptors
-			closePipeFds(pipes, nc-1, p, io);
+			// for the first process: set input file if it is not the inherited STDIN. Else close STDIN.
+			if( p==0 && (io[0] != STDIN_FILENO) ){
 
-			// set input file, different for first process
-			if(p == 0){
-				if(dup2(io[0], STDIN_FILENO) < 0){
-					printf("Error with dup2 io[0]\n");
-					exit(EXIT_FAILURE);
-				}
-				if (io[0] != STDIN_FILENO)
-					close(io[0]);
-			} else {
-				if(dup2(pipes[p-1][0], STDIN_FILENO) < 0){
+				if( dup2(io[0], STDIN_FILENO) < 0 ){
 					printf("Error with dup2 pipes[%d][0]\n", p-1);
 					exit(EXIT_FAILURE);
 				}
-				if (pipes[p-1][0] != STDIN_FILENO)
-					close(pipes[p-1][0]);
+				close(io[0]);
+			} else {
+				close(io[0]);
+				close(STDIN_FILENO);
 			}
 
-			// set output file, different for last process
-			if(p == nc-1){
-				if(dup2(io[1], STDOUT_FILENO) < 0){
-					printf("Error with dup2 io[1]\n");
-					exit(EXIT_FAILURE);
-				}
-				if (io[1] != STDOUT_FILENO)
-					close(io[1]);
-			} else {
-				if(dup2(pipes[p][1], STDOUT_FILENO) < 0){
+			// for the last process: set the output file if it is not the inherited STDOUT.
+			if( io[1] != STDOUT_FILENO ){
+				if( (p==nc-1) && dup2(io[1], STDOUT_FILENO) < 0 ){
 					printf("Error with dup2 pipes[%d][1]\n", p);
 					exit(EXIT_FAILURE);
 				}
-				if (pipes[p][1] != STDOUT_FILENO)
-					close(pipes[p][1]);
+				printf("my STDOUT before\n");
+				close(io[1]);
+				printf("my STDOUT after\n");
 			}
 
 			// Obtain arguments relevant for this process.
@@ -254,6 +236,10 @@ void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens,
 				free(argArr.arr);
 				exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
 			}
+
+			//I don't think this code is ever actually executed...
+			//...
+			//...
 			emptyFlexArray(&argArr);
 			free(argArr.arr);
 
@@ -263,18 +249,7 @@ void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens,
 
 
 	// Only the parent process can get here.
-	closePipeFds(pipes, nc-1, -5, io); //-5 as fake index so that there will be no exceptions in closing fds, unlike children based on their actual index.
-	for(int p=0 ; p<nc ; p++){
-		waitpid(pids[p], &status[p], 0);
-		if(status[p] != EXIT_SUCCESS){
-			parentStatus = EXIT_FAILURE;
-		}
-	}
-
-	freePipes(pipes, nc-1);
 	free(pids);
-	free(status);
-
 }
 
 char *removeQuotes(char *quotedInput){
