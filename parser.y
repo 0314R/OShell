@@ -63,22 +63,22 @@ int executeChain(char *value){
 %union {int num; char *id; }
 %token <id> IDENTIFIER QUOTED_STRING
 %token OR AND SINGLEOR SINGLEAND EOL
-%type <id> executable options option fileName pipeline
-%type <num> chain
+%type <id> executable options option fileName pipeline chain
+%type <num> composition
 
 %%
 inputline   : composition inputline		{ ; }
 			|
             ;
 
-composition : chain AND					{ if($1 != 0) skip = true; }
-			| chain OR					{ if($1 == 0) skip = true; }
-			| chain SINGLEAND			{ ; }
-			| chain EOL					{ ; }
-			| chain ';'					{ ; }
+composition : chain AND					{ if(executeChain($1) != 0) skip = true; }
+			| chain OR					{ if(executeChain($1) == 0) skip = true; }
+			| chain SINGLEAND			{ $$ = executeChain($1); }
+			| chain EOL					{ $$ = executeChain($1); }
+			| chain ';'					{ $$ = executeChain($1); }
 			;
 
-chain       : pipeline redirections		{ $$ = executeChain($1); }
+chain       : pipeline redirections		{ ; }
             ;
 
 pipeline 	: pipedCommand pipeline		{ free($2); }
