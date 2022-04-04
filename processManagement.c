@@ -1,5 +1,16 @@
 #include "processManagement.h"
 
+void printBgPids(){
+	printf("BgPids:\n");
+	for(int i=0 ; i<10 ; i++){
+		for(int j=0 ; j<10 ; j++){
+			printf("%d ", bgPlPids[i][j]);
+		}
+		putchar('\n');
+	}
+	putchar('\n');
+}
+
 void openInput(char *fileName, int *io){
 	io[0] = open(fileName, O_RDONLY);
 	if(io[0] < 0)
@@ -308,6 +319,55 @@ void executeBackgroundCommand(char command[20][256], int len, int io[2]){
 	}
 }
 
+void startBackgroundCommand(char command[20][256], int len, int io[2]){
+	FlexArray argArr;
+
+	// Set input file if it is not the inherited STDIN. Else close STDIN.
+	if( io[0] != STDIN_FILENO ){
+
+		if( dup2(io[0], STDIN_FILENO) < 0 ){
+			printf("Error with dup2 io[0]\n");
+			exit(EXIT_FAILURE);
+		}
+	} else {
+		close(STDIN_FILENO);
+	}
+	close(io[0]);
+
+	// Set the output file if it is not the inherited STDOUT.
+	if( io[1] != STDOUT_FILENO ){
+		if( dup2(io[1], STDOUT_FILENO) < 0 ){
+			printf("Error with dup2 io[1]\n");
+			exit(EXIT_FAILURE);
+		}
+		close(io[1]);
+	}
+
+	// If the command is jobs, just send a special signal to the parent process.
+	if( strcmp(command[0], "jobs") == 0){
+		kill(getppid(), SIGUSR1);
+		exit(EXIT_SUCCESS);
+	}
+
+	// Obtain arguments relevant for this process.
+	argArr = staticToFlexArray(command, len);
+	// Execute the command corresponding to this process.
+	if( execvp(argArr.arr[0], argArr.arr) == -1){
+		printf("Error: command not found!\n");
+		emptyFlexArray(&argArr);
+		free(argArr.arr);
+		exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
+	}
+
+	//I don't think this code is ever actually executed...
+	//...
+	//...
+	emptyFlexArray(&argArr);
+	free(argArr.arr);
+
+	exit(EXIT_SUCCESS);
+}
+
 // void executeBackgroundFirst(char commands[10][20][256], int nc, int *rowLens, int io[2]){
 // 	struct sigaction ch = {0};
 // 	ch.sa_handler = &handle_sigchld;
@@ -318,14 +378,14 @@ void executeBackgroundCommand(char command[20][256], int len, int io[2]){
 // }
 
 void handle_sigchld(int sig){
-	printf("child finished\n");
+	//printf("child finished\n");
 }
 
 void handle_sigusr1(int sig){
 	printf("not yet implemented\n");
 }
 
-void executeBackground(char commands[10][20][256], int nc, int *rowLens, int io[2]){
+void executeBackground(char commands[10][20][256], int nc, int *rowLens, int io[2], int bgPlId){
 	struct sigaction ch = {0};
 	struct sigaction jobs = {0};
 	ch.sa_handler = &handle_sigchld;
@@ -335,7 +395,25 @@ void executeBackground(char commands[10][20][256], int nc, int *rowLens, int io[
 	sigaction(SIGCHLD, &ch, NULL);
 	sigaction(SIGUSR1, &jobs, NULL);
 
-	executeBackgroundCommand(commands[0], rowLens[0], io);
+	pid_t pid;
+
+	// for(int p=0 ; p<nc ; p++)
+	// 	executeBackgroundCommand(commands[p], rowLens[p], io);
+
+	for(int p=0 ; p<nc ; p++){
+		pid = fork();
+
+		if(pid < 0){
+			printf("Error: failed to fork\n");
+			exit(EXIT_FAILURE);
+		} else if(pid > 0){
+			//parent stores the pid in the global matrix of background pipeline pids.
+			bgPlPids[bgPlId][p] = pid;
+		} else {
+			//child actually executes command
+			startBackgroundCommand(commands[p], rowLens[p], io);
+		}
+	}
 }
 
 char *removeQuotes(char *quotedInput){

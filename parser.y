@@ -8,7 +8,7 @@ int yylex_destroy();
 
 char pl[10][20][256]; //this static array will contain all the args of all commands of the current pipeline.
 int rowLens[10];	  //this goes together with the above: says how long each row is, i.e. how many args per command.
-int r, c;
+int r, c, nOfBgPls = 0; //rows, columns of the current pipeline ; number of background pipelines so far.
 int skip = false;
 int bg = false;
 int io[2] = {0,1};
@@ -49,7 +49,8 @@ int executeChain(char *value){
 			status = cd(pl[0], rowLens[0]);
 		else{
 			if(bg){
-				executeBackground(pl, r, rowLens, io);
+				executeBackground(pl, r, rowLens, io, nOfBgPls);
+				nOfBgPls++;
 				//executeBackgroundCommand(pl[0], rowLens[0], io);
 				status = EXIT_SUCCESS;
 			}
