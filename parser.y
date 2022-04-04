@@ -49,7 +49,8 @@ int executeChain(char *value){
 			status = cd(pl[0], rowLens[0]);
 		else{
 			if(bg){
-				executeBackgroundPipeline(pl, r, rowLens, io);
+				//executeBackgroundPipeline(pl, r, rowLens, io);
+				executeBackgroundCommand(pl[0], rowLens[0], io);
 				status = EXIT_SUCCESS;
 			}
 			else{

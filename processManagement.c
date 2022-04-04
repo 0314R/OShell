@@ -189,7 +189,7 @@ int executePipeline(char commands[10][20][256], int nc, int *rowLens, int io[2])
 }
 
 void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens, int io[2]){
-	printf("executing %s(%s) in the bg\n", commands[0][0], commands[0][1]);
+	//printf("executing %s(%s) in the bg\n", commands[0][0], commands[0][1]);
 	FlexArray argArr;
 
 	pid_t *pids = malloc(nc * sizeof(pid_t));
@@ -207,24 +207,21 @@ void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens,
 			if( p==0 && (io[0] != STDIN_FILENO) ){
 
 				if( dup2(io[0], STDIN_FILENO) < 0 ){
-					printf("Error with dup2 pipes[%d][0]\n", p-1);
+					printf("Error with dup2 io[0]\n");
 					exit(EXIT_FAILURE);
 				}
-				close(io[0]);
 			} else {
-				close(io[0]);
 				close(STDIN_FILENO);
 			}
+			close(io[0]);
 
 			// for the last process: set the output file if it is not the inherited STDOUT.
 			if( io[1] != STDOUT_FILENO ){
 				if( (p==nc-1) && dup2(io[1], STDOUT_FILENO) < 0 ){
-					printf("Error with dup2 pipes[%d][1]\n", p);
+					printf("Error with dup2 io[1]\n");
 					exit(EXIT_FAILURE);
 				}
-				printf("my STDOUT before\n");
 				close(io[1]);
-				printf("my STDOUT after\n");
 			}
 
 			// Obtain arguments relevant for this process.
@@ -251,6 +248,61 @@ void executeBackgroundPipeline(char commands[10][20][256], int nc, int *rowLens,
 	// Only the parent process can get here.
 	free(pids);
 }
+
+void executeBackgroundCommand(char command[20][256], int len, int io[2]){
+	//printf("executing %s(%s) in the bg\n", commands[0][0], commands[0][1]);
+	FlexArray argArr;
+
+	pid_t pid;
+
+	pid = fork();
+
+	if(pid < 0){
+		printf("Error: failed to fork\n");
+		exit(EXIT_FAILURE);
+	}
+	else if(pid == 0){
+		// Set input file if it is not the inherited STDIN. Else close STDIN.
+		if( io[0] != STDIN_FILENO ){
+
+			if( dup2(io[0], STDIN_FILENO) < 0 ){
+				printf("Error with dup2 io[0]\n");
+				exit(EXIT_FAILURE);
+			}
+		} else {
+			close(STDIN_FILENO);
+		}
+		close(io[0]);
+
+		// Set the output file if it is not the inherited STDOUT.
+		if( io[1] != STDOUT_FILENO ){
+			if( dup2(io[1], STDOUT_FILENO) < 0 ){
+				printf("Error with dup2 io[1]\n");
+				exit(EXIT_FAILURE);
+			}
+			close(io[1]);
+		}
+
+		// Obtain arguments relevant for this process.
+		argArr = staticToFlexArray(command, len);
+		// Execute the command corresponding to this process.
+		if( execvp(argArr.arr[0], argArr.arr) == -1){
+			printf("Error: command not found!\n");
+			emptyFlexArray(&argArr);
+			free(argArr.arr);
+			exit(EXIT_FAILURE);			// The process exits anyway, but lets the parent know it was unsuccesful.
+		}
+
+		//I don't think this code is ever actually executed...
+		//...
+		//...
+		emptyFlexArray(&argArr);
+		free(argArr.arr);
+
+		exit(EXIT_SUCCESS);
+	}
+}
+
 
 char *removeQuotes(char *quotedInput){
 	char *output;
