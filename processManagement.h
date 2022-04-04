@@ -17,7 +17,7 @@
 
 //pid_t pid;
 pid_t bgPlPids[10][10]; //for storing background pipeline pids, 10 pids per pipeline (not continuous to avoid conflicts between different background pipelines.)
-int pidsPerBgPl[10]; //how many pids are there per background pipeline? for counting purposes.
+//int pidsPerBgPl[10]; //how many pids are there per background pipeline? for counting purposes.
 
 void installHandlers();
 

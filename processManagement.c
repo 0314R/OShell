@@ -11,6 +11,16 @@ void printBgPids(){
 	putchar('\n');
 }
 
+int activeBackgroundProcesses(){
+	for(int i=0 ; i<10 ; i++){
+		for(int j=0 ; j<10 ; j++){
+			if( bgPlPids[i][j] != 0)
+				return 1;
+		}
+	}
+	return 0;
+}
+
 void openInput(char *fileName, int *io){
 	io[0] = open(fileName, O_RDONLY);
 	if(io[0] < 0)
@@ -390,16 +400,20 @@ void removePid(pid_t pid){
 }
 
 void handle_sigchld(int sig, siginfo_t *si, void *idk){
-	//printf("___________________________\n");
-	//printf("child finished, sig %d pid %d\n", sig, si->si_pid);
-	//printBgPids();
 	removePid(si->si_pid);
-	//printBgPids();
-	//printf("___________________________\n");
 }
 
 void handle_sigusr1(int sig){
 	printf("not yet implemented\n");
+}
+
+void handle_sigint(int sig){
+	printf("got SIGINT\n");
+	if( activeBackgroundProcesses() ){
+		printf("Error: there are still background processes running!\n");
+	} else {
+
+	}
 }
 
 void installHandlers(){
