@@ -282,6 +282,12 @@ void executeBackgroundCommand(char command[20][256], int len, int io[2]){
 			close(io[1]);
 		}
 
+		// If the command is jobs, just send a special signal to the parent process.
+		if( strcmp(command[0], "jobs") == 0){
+			kill(getppid(), SIGUSR1);
+			exit(EXIT_SUCCESS);
+		}
+
 		// Obtain arguments relevant for this process.
 		argArr = staticToFlexArray(command, len);
 		// Execute the command corresponding to this process.
@@ -302,15 +308,32 @@ void executeBackgroundCommand(char command[20][256], int len, int io[2]){
 	}
 }
 
+// void executeBackgroundFirst(char commands[10][20][256], int nc, int *rowLens, int io[2]){
+// 	struct sigaction ch = {0};
+// 	ch.sa_handler = &handle_sigchld;
+// 	ch.sa_flags = SA_RESTART;
+// 	sigaction(SIGCHLD, &ch, NULL);
+//
+// 	executeBackgroundCommand(commands[0], rowLens[0], io);
+// }
+
 void handle_sigchld(int sig){
 	printf("child finished\n");
 }
 
+void handle_sigusr1(int sig){
+	printf("not yet implemented\n");
+}
+
 void executeBackground(char commands[10][20][256], int nc, int *rowLens, int io[2]){
 	struct sigaction ch = {0};
+	struct sigaction jobs = {0};
 	ch.sa_handler = &handle_sigchld;
+	jobs.sa_handler = &handle_sigusr1;
 	ch.sa_flags = SA_RESTART;
+	jobs.sa_flags = SA_RESTART;
 	sigaction(SIGCHLD, &ch, NULL);
+	sigaction(SIGUSR1, &jobs, NULL);
 
 	executeBackgroundCommand(commands[0], rowLens[0], io);
 }
