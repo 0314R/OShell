@@ -377,9 +377,25 @@ void startBackgroundCommand(char command[20][256], int len, int io[2]){
 // 	executeBackgroundCommand(commands[0], rowLens[0], io);
 // }
 
+void removePid(pid_t pid){
+	for(int i=0 ; i<10; i++){
+		for(int j=0 ; j<10 ; j++){
+			if(bgPlPids[i][j] == pid){
+				bgPlPids[i][j] = 0;
+				return;
+			}
+		}
+	}
+	//printf("Error: couldn't find pid in matrix!\n");
+}
+
 void handle_sigchld(int sig, siginfo_t *si, void *idk){
-	printf("child finished, sig %d pid %d\n", sig, si->si_pid);
-	printBgPids();
+	//printf("___________________________\n");
+	//printf("child finished, sig %d pid %d\n", sig, si->si_pid);
+	//printBgPids();
+	removePid(si->si_pid);
+	//printBgPids();
+	//printf("___________________________\n");
 }
 
 void handle_sigusr1(int sig){

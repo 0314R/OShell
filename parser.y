@@ -50,7 +50,7 @@ int executeChain(char *value){
 		else{
 			if(bg){
 				executeBackground(pl, r, rowLens, io, nOfBgPls);
-				nOfBgPls++;
+				nOfBgPls = (nOfBgPls + 1) % 10;
 				//executeBackgroundCommand(pl[0], rowLens[0], io);
 				status = EXIT_SUCCESS;
 			}
